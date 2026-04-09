@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Public routes
-Route::get('/', fn() => Inertia::render('Home'))->name('home');
+Route::get('/', [PublicController::class, 'home'])->name('home');
+Route::get('/projects', [PublicController::class, 'projects'])->name('projects');
+Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
+Route::post('/contact', [PublicController::class, 'submitContact'])->name('contact.submit');
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
