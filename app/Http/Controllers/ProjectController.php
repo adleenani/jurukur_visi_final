@@ -37,13 +37,13 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'project_id' => 'required|max:20|unique:projects,project_id',
-            'project_name' => 'required|max:100',
+            'project_id' => 'required|max:20|alpha_num|unique:projects,project_id',
+            'project_name' => 'required|string|max:100',
             'project_start' => 'required|date',
             'project_end' => 'required|date|after_or_equal:project_start',
-            'project_location' => 'required|max:100',
-            'project_services' => 'required|max:100',
-            'project_description' => 'nullable|max:500',
+            'project_location' => 'required|string|max:100',
+            'project_services' => 'required|string|max:100',
+            'project_description' => 'nullable|string|max:500',
         ]);
 
         // Calculate duration automatically

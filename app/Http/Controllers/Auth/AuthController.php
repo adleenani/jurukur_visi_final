@@ -29,14 +29,15 @@ class AuthController extends Controller
     public function signup(Request $request)
     {
         $validated = $request->validate([
-            'username' => 'required|min:4|max:30|unique:users,username',
-            'full_name' => 'required|max:100',
-            'email' => 'required|email|unique:users,email',
+            'username' => 'required|min:4|max:30|alpha_num|unique:users,username',
+            'full_name' => 'required|string|max:100|regex:/^[a-zA-Z\s]+$/',
+            'email' => 'required|email:rfc|max:100|unique:users,email',
             'password' => [
                 'required',
                 'min:14',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
+                'regex:/[^A-Za-z0-9]/',
             ],
         ]);
 

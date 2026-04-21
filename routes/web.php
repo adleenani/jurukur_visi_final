@@ -29,13 +29,14 @@ Route::middleware(['role:pic'])->group(function () {
     Route::get('/admin/projects/create', [ProjectController::class, 'create'])->name('admin.projects.create');
     Route::post('/admin/projects', [ProjectController::class, 'store'])->name('admin.projects.store');
     Route::get('/admin/projects/{project_id}/edit', [ProjectController::class, 'edit'])->name('admin.projects.edit');
-    Route::put('/admin/projects/{project_id}', [ProjectController::class, 'update'])->name('admin.projects.update');
+    Route::post('/admin/projects/{project_id}/update', [ProjectController::class, 'update'])->name('admin.projects.update');
     Route::delete('/admin/projects/{project_id}', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
+    Route::post('/admin/projects/{project_id}/delete', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
 
-     // Booking management
+    // Booking management
     Route::get('/admin/bookings', [BookingController::class, 'index'])->name('admin.bookings');
-    Route::put('/admin/bookings/{reference_number}/confirm', [BookingController::class, 'confirm'])->name('admin.bookings.confirm');
-    Route::put('/admin/bookings/{reference_number}/reschedule', [BookingController::class, 'reschedule'])->name('admin.bookings.reschedule');
-    Route::put('/admin/bookings/{reference_number}/cancel', [BookingController::class, 'cancel'])->name('admin.bookings.cancel');
-    Route::delete('/admin/bookings/{reference_number}', [BookingController::class, 'destroy'])->name('admin.bookings.destroy');
+    Route::post('/admin/bookings/{reference_number}/confirm', [BookingController::class, 'confirm'])->name('admin.bookings.confirm');
+    Route::post('/admin/bookings/{reference_number}/reschedule', [BookingController::class, 'reschedule'])->name('admin.bookings.reschedule');
+    Route::post('/admin/bookings/{reference_number}/cancel', [BookingController::class, 'cancel'])->name('admin.bookings.cancel');
+    Route::post('/admin/bookings/{reference_number}/delete', [BookingController::class, 'destroy'])->name('admin.bookings.destroy');
 });

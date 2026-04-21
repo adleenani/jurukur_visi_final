@@ -10,13 +10,13 @@ use Inertia\Inertia;
 class PublicController extends Controller
 {
     public function home()
-{
-    $stats = [
-        'projects'  => Project::count(),
-    ];
+    {
+        $stats = [
+            'projects' => Project::count(),
+        ];
 
-    return Inertia::render('Home', compact('stats'));
-}
+        return Inertia::render('Home', compact('stats'));
+    }
 
     public function projects()
     {
@@ -32,29 +32,29 @@ class PublicController extends Controller
     public function submitContact(Request $request)
     {
         $request->validate([
-            'name'              => 'required|max:100',
-            'email'             => 'required|email|max:100',
-            'phone'             => 'required|max:20',
-            'service_type'      => 'required|max:100',
-            'preferred_date'    => 'required|date|after:today',
-            'preferred_time'    => 'required',
-            'consultation_type' => 'required',
-            'message'           => 'nullable|max:1000',
+            'name' => 'required|string|min:2|max:100|regex:/^[a-zA-Z\s]+$/',
+            'email' => 'required|email:rfc,dns|max:100',
+            'phone' => 'required|string|max:20|regex:/^[0-9\+\-\s\(\)]+$/',
+            'service_type' => 'required|string|max:100',
+            'preferred_date' => 'required|date|after:today',
+            'preferred_time' => 'required|string|in:9:00 AM,10:00 AM,11:00 AM,2:00 PM,3:00 PM,4:00 PM',
+            'consultation_type' => 'required|string|in:online,in-person',
+            'message' => 'nullable|string|max:1000',
         ]);
 
         ConsultationBooking::create([
-            'reference_number'  => (string) \Illuminate\Support\Str::uuid(),
-            'name'              => $request->name,
-            'email'             => $request->email,
-            'phone'             => $request->phone,
-            'service_type'      => $request->service_type,
-            'preferred_date'    => $request->preferred_date,
-            'preferred_time'    => $request->preferred_time,
+            'reference_number' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => strip_tags($request->name),
+            'email' => $request->email,
+            'phone' => strip_tags($request->phone),
+            'service_type' => $request->service_type,
+            'preferred_date' => $request->preferred_date,
+            'preferred_time' => $request->preferred_time,
             'consultation_type' => $request->consultation_type,
-            'message'           => $request->message,
-            'status'            => 'pending',
+            'message' => strip_tags($request->message),
+            'status' => 'pending',
         ]);
 
-        return back()->with('success', 'Booking submitted! We will confirm your appointment within 1-2 business days. Check your email for updates.');
+        return back()->with('success', 'Booking submitted! We will confirm your appointment within 1-2 business days.');
     }
 }

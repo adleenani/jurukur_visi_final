@@ -14,8 +14,8 @@ class BookingController extends Controller
         $bookings = ConsultationBooking::orderBy('created_at', 'desc')->get();
 
         $stats = [
-            'total'     => $bookings->count(),
-            'pending'   => $bookings->where('status', 'pending')->count(),
+            'total' => $bookings->count(),
+            'pending' => $bookings->where('status', 'pending')->count(),
             'confirmed' => $bookings->where('status', 'confirmed')->count(),
             'cancelled' => $bookings->where('status', 'cancelled')->count(),
         ];
@@ -26,68 +26,47 @@ class BookingController extends Controller
     // Confirm booking
     public function confirm(Request $request, $reference_number)
     {
-        $request->validate([
-            'confirmed_date' => 'required|date',
-            'confirmed_time' => 'required',
-            'admin_response' => 'nullable|max:500',
-        ]);
-
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status'         => 'confirmed',
+            'status' => 'confirmed',
             'confirmed_date' => $request->confirmed_date,
             'confirmed_time' => $request->confirmed_time,
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')
-            ->with('success', 'Booking confirmed successfully!');
+        return redirect()->route('admin.bookings')->with('success', 'Booking confirmed!');
     }
 
-    // Reschedule booking
     public function reschedule(Request $request, $reference_number)
     {
-        $request->validate([
-            'confirmed_date' => 'required|date',
-            'confirmed_time' => 'required',
-            'admin_response' => 'nullable|max:500',
-        ]);
-
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status'         => 'rescheduled',
+            'status' => 'rescheduled',
             'confirmed_date' => $request->confirmed_date,
             'confirmed_time' => $request->confirmed_time,
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')
-            ->with('success', 'Booking rescheduled successfully!');
+        return redirect()->route('admin.bookings')->with('success', 'Booking rescheduled!');
     }
 
-    // Cancel booking
     public function cancel(Request $request, $reference_number)
     {
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status'         => 'cancelled',
+            'status' => 'cancelled',
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')
-            ->with('success', 'Booking cancelled.');
+        return redirect()->route('admin.bookings')->with('success', 'Booking cancelled.');
     }
 
-    // Delete booking
     public function destroy($reference_number)
     {
-        $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
-        $booking->delete();
-
-        return redirect()->route('admin.bookings')
-            ->with('success', 'Booking deleted.');
+        ConsultationBooking::where('reference_number', $reference_number)->firstOrFail()->delete();
+        return redirect()->route('admin.bookings')->with('success', 'Booking deleted.');
     }
 }

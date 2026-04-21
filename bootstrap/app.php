@@ -12,9 +12,6 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
-        //
-    })
 
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
@@ -23,6 +20,16 @@ return Application::configure(basePath: dirname(__DIR__))
     })
 
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
+        ]);
+    })
+
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            HandleInertiaRequests::class,
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);

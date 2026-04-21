@@ -15,7 +15,7 @@ const services = [
 ];
 
 export default function Edit({ project }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         project_name:        project.project_name ?? '',
         project_start:       project.project_start ?? '',
         project_end:         project.project_end ?? '',
@@ -42,7 +42,7 @@ export default function Edit({ project }) {
 
     function submit(e) {
         e.preventDefault();
-        put(`/admin/projects/${project.project_id}`);
+        post(`/admin/projects/${project.project_id}/update`);
     }
 
     return (

@@ -5,12 +5,10 @@ export default function Index({ projects }) {
     const { flash } = usePage().props;
 
     function deleteProject(project_id) {
-    if (confirm('Are you sure you want to delete this project?')) {
-        router.delete(`/admin/projects/${project_id}`, {
-            preserveScroll: true,
-        });
+        if (confirm("Are you sure you want to delete this project?")) {
+            router.post(`/admin/projects/${project_id}/delete`);
+        }
     }
-}
 
     return (
         <AdminLayout>
@@ -19,10 +17,12 @@ export default function Index({ projects }) {
                     <h1 className="text-2xl font-medium text-gray-800">
                         Projects
                     </h1>
+
                     <p className="text-gray-500 text-sm mt-1">
                         All completed surveying projects.
                     </p>
                 </div>
+
                 <Link
                     href="/admin/projects/create"
                     className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-800 transition"
@@ -42,6 +42,7 @@ export default function Index({ projects }) {
                     <p className="text-gray-400 text-sm mb-4">
                         No projects yet.
                     </p>
+
                     <Link
                         href="/admin/projects/create"
                         className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-800 transition"
@@ -60,6 +61,7 @@ export default function Index({ projects }) {
                                     "Location",
                                     "Duration",
                                     "Service",
+                                    "Notes",
                                     "Actions",
                                 ].map((h) => (
                                     <th
@@ -71,6 +73,7 @@ export default function Index({ projects }) {
                                 ))}
                             </tr>
                         </thead>
+
                         <tbody className="divide-y divide-gray-50">
                             {projects.map((project) => (
                                 <tr
@@ -80,18 +83,40 @@ export default function Index({ projects }) {
                                     <td className="px-5 py-4 font-medium text-green-800">
                                         {project.project_id}
                                     </td>
+
                                     <td className="px-5 py-4 text-gray-700">
-                                        {project.project_name}
+                                        <p>{project.project_name}</p>
                                     </td>
+
                                     <td className="px-5 py-4 text-gray-500">
                                         {project.project_location}
                                     </td>
+
                                     <td className="px-5 py-4 text-gray-500">
                                         {project.project_duration}
+
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {project.project_start} —
+                                            {project.project_end}
+                                        </p>
                                     </td>
+
                                     <td className="px-5 py-4 text-gray-500 max-w-xs truncate">
                                         {project.project_services}
                                     </td>
+
+                                    <td className="px-5 py-4 max-w-xs">
+                                        {project.project_description ? (
+                                            <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+                                                {project.project_description}
+                                            </p>
+                                        ) : (
+                                            <span className="text-xs text-gray-300 italic">
+                                                No notes
+                                            </span>
+                                        )}
+                                    </td>
+
                                     <td className="px-5 py-4">
                                         <div className="flex items-center gap-3">
                                             <Link
@@ -100,6 +125,7 @@ export default function Index({ projects }) {
                                             >
                                                 Edit
                                             </Link>
+
                                             <button
                                                 onClick={() =>
                                                     deleteProject(
