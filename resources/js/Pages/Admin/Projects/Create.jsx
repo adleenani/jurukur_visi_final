@@ -1,4 +1,4 @@
-import AdminLayout from "../../../Layouts/AdminLayout";
+import AdminLayout from "../../../Layout/AdminLayout";
 import { useForm } from "@inertiajs/react";
 
 const services = [
@@ -13,7 +13,6 @@ const services = [
     "Land & Housing Development",
     "Underground Utilities Detection and Mapping",
 ];
-
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
         project_id: "",

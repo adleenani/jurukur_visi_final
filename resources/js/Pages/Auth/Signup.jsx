@@ -1,6 +1,7 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 
-export default function Signup({ errors }) {
+export default function Signup() {
+    const { errors = {}, flash = {} } = usePage().props;
     const { data, setData, post, processing } = useForm({
         username: '',
         full_name: '',
@@ -18,6 +19,12 @@ export default function Signup({ errors }) {
             <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-md border border-gray-100">
                 <h1 className="text-2xl font-medium text-green-800 text-center mb-2">JURUKUR VISI</h1>
                 <h2 className="text-center text-gray-500 mb-8 text-sm">Create Staff Account</h2>
+
+                {flash.message && (
+                    <div className="bg-green-50 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
+                        {flash.message}
+                    </div>
+                )}
 
                 {Object.keys(errors).length > 0 && (
                     <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm space-y-1">

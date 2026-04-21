@@ -12,8 +12,9 @@ class ProjectController extends Controller
     public function dashboard()
     {
         $stats = [
-            'total'  => Project::count(),
+            'total' => Project::count(),
             'recent' => Project::orderBy('created_at', 'desc')->take(5)->get(),
+            'pending_bookings' => \App\Models\ConsultationBooking::where('status', 'pending')->count(),
         ];
 
         return Inertia::render('Admin/Dashboard', compact('stats'));
@@ -36,34 +37,36 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'project_id'       => 'required|max:20|unique:projects,project_id',
-            'project_name'     => 'required|max:100',
-            'project_start'    => 'required|date',
-            'project_end'      => 'required|date|after_or_equal:project_start',
+            'project_id' => 'required|max:20|unique:projects,project_id',
+            'project_name' => 'required|max:100',
+            'project_start' => 'required|date',
+            'project_end' => 'required|date|after_or_equal:project_start',
             'project_location' => 'required|max:100',
             'project_services' => 'required|max:100',
             'project_description' => 'nullable|max:500',
         ]);
 
         // Calculate duration automatically
-        $start    = new \DateTime($request->project_start);
-        $end      = new \DateTime($request->project_end);
+        $start = new \DateTime($request->project_start);
+        $end = new \DateTime($request->project_end);
         $interval = $start->diff($end);
         $duration = '';
-        if ($interval->y > 0) $duration .= $interval->y . ' Year(s), ';
-        if ($interval->m > 0) $duration .= $interval->m . ' Month(s), ';
+        if ($interval->y > 0)
+            $duration .= $interval->y . ' Year(s), ';
+        if ($interval->m > 0)
+            $duration .= $interval->m . ' Month(s), ';
         $duration .= $interval->d . ' Day(s)';
 
         Project::create([
-            'project_id'          => strtoupper($request->project_id),
-            'project_name'        => $request->project_name,
-            'project_start'       => $request->project_start,
-            'project_end'         => $request->project_end,
-            'project_location'    => $request->project_location,
-            'project_duration'    => $duration,
-            'project_services'    => $request->project_services,
+            'project_id' => strtoupper($request->project_id),
+            'project_name' => $request->project_name,
+            'project_start' => $request->project_start,
+            'project_end' => $request->project_end,
+            'project_location' => $request->project_location,
+            'project_duration' => $duration,
+            'project_services' => $request->project_services,
             'project_description' => $request->project_description,
-            'created_by'          => session('user_id'),
+            'created_by' => session('user_id'),
         ]);
 
         return redirect()->route('admin.projects')
@@ -83,30 +86,31 @@ class ProjectController extends Controller
         $project = Project::where('project_id', $project_id)->firstOrFail();
 
         $request->validate([
-            'project_name'        => 'required|max:100',
-            'project_start'       => 'required|date',
-            'project_end'         => 'required|date|after_or_equal:project_start',
-            'project_location'    => 'required|max:100',
-            'project_services'    => 'required|max:100',
+            'project_name' => 'required|max:100',
+            'project_start' => 'required|date',
+            'project_end' => 'required|date|after_or_equal:project_start',
+            'project_location' => 'required|max:100',
+            'project_services' => 'required|max:100',
             'project_description' => 'nullable|max:500',
         ]);
 
-        // Recalculate duration
-        $start    = new \DateTime($request->project_start);
-        $end      = new \DateTime($request->project_end);
+        $start = new \DateTime($request->project_start);
+        $end = new \DateTime($request->project_end);
         $interval = $start->diff($end);
         $duration = '';
-        if ($interval->y > 0) $duration .= $interval->y . ' Year(s), ';
-        if ($interval->m > 0) $duration .= $interval->m . ' Month(s), ';
+        if ($interval->y > 0)
+            $duration .= $interval->y . ' Year(s), ';
+        if ($interval->m > 0)
+            $duration .= $interval->m . ' Month(s), ';
         $duration .= $interval->d . ' Day(s)';
 
         $project->update([
-            'project_name'        => $request->project_name,
-            'project_start'       => $request->project_start,
-            'project_end'         => $request->project_end,
-            'project_location'    => $request->project_location,
-            'project_duration'    => $duration,
-            'project_services'    => $request->project_services,
+            'project_name' => $request->project_name,
+            'project_start' => $request->project_start,
+            'project_end' => $request->project_end,
+            'project_location' => $request->project_location,
+            'project_duration' => $duration,
+            'project_services' => $request->project_services,
             'project_description' => $request->project_description,
         ]);
 

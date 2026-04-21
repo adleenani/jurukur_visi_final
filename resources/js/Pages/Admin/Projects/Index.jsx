@@ -1,14 +1,16 @@
-import AdminLayout from "../../../Layouts/AdminLayout";
+import AdminLayout from "../../../Layout/AdminLayout";
 import { Link, router, usePage } from "@inertiajs/react";
 
 export default function Index({ projects }) {
     const { flash } = usePage().props;
 
     function deleteProject(project_id) {
-        if (confirm("Are you sure you want to delete this project?")) {
-            router.delete(`/admin/projects/${project_id}`);
-        }
+    if (confirm('Are you sure you want to delete this project?')) {
+        router.delete(`/admin/projects/${project_id}`, {
+            preserveScroll: true,
+        });
     }
+}
 
     return (
         <AdminLayout>

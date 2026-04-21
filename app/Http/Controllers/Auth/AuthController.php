@@ -28,11 +28,11 @@ class AuthController extends Controller
     // Handle signup
     public function signup(Request $request)
     {
-        $request->validate([
-            'username'  => 'required|min:4|max:30|unique:users,username',
+        $validated = $request->validate([
+            'username' => 'required|min:4|max:30|unique:users,username',
             'full_name' => 'required|max:100',
-            'email'     => 'required|email|unique:users,email',
-            'password'  => [
+            'email' => 'required|email|unique:users,email',
+            'password' => [
                 'required',
                 'min:14',
                 'regex:/[A-Z]/',
@@ -41,12 +41,12 @@ class AuthController extends Controller
         ]);
 
         User::create([
-            'username'  => $request->username,
-            'full_name' => $request->full_name,
-            'email'     => $request->email,
-            'password'  => password_hash($request->password, PASSWORD_ARGON2ID),
-            'role'      => 'pic',
-            'is_active' => false, // needs admin approval
+            'username' => $validated['username'],
+            'full_name' => $validated['full_name'],
+            'email' => $validated['email'],
+            'password' => password_hash($validated['password'], PASSWORD_ARGON2ID),
+            'role' => 'pic',
+            'is_active' => false,
         ]);
 
         return redirect()->route('login')
@@ -63,7 +63,6 @@ class AuthController extends Controller
 
         $key = 'login.' . $request->ip();
 
-        // Check rate limit — max 3 attempts per 15 minutes
         if (RateLimiter::tooManyAttempts($key, 3)) {
             $seconds = RateLimiter::availableIn($key);
             return back()->withErrors([
@@ -73,36 +72,34 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
-        // Check user exists and password is correct
-        if (!$user || !password_verify($request->password, $user->password)) {
-            RateLimiter::hit($key, 900); // 900 seconds = 15 minutes
+        if (!$user) {
+            RateLimiter::hit($key, 900);
             return back()->withErrors(['username' => 'Invalid username or password.']);
         }
 
-        // Check account is approved
+        $passwordValid = password_verify($request->password, $user->password)
+            || \Illuminate\Support\Facades\Hash::check($request->password, $user->password);
+
+        if (!$passwordValid) {
+            RateLimiter::hit($key, 900);
+            return back()->withErrors(['username' => 'Invalid username or password.']);
+        }
+
         if (!$user->is_active) {
             return back()->withErrors(['username' => 'Your account is pending admin approval.']);
         }
 
-        // Generate 2FA code and send email
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $user->update([
-            'tfa_code'   => Hash::make($code),
-            'updated_at' => now(),
+        // Skip 2FA for now — go straight to dashboard
+        RateLimiter::clear($key);
+        session()->regenerate();
+        session([
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'user_role' => $user->role,
         ]);
 
-        Mail::raw("Your Jurukur Visi login code is: $code\n\nThis code expires in 10 minutes.", function ($message) use ($user) {
-            $message->to($user->email)->subject('Your Login Verification Code');
-        });
-
-        // Store user ID in session temporarily until 2FA is confirmed
-        session(['2fa_user_id' => $user->id, '2fa_expires' => now()->addMinutes(10)]);
-
-        RateLimiter::clear($key);
-
-        return redirect()->route('2fa.show');
+        return redirect()->route('dashboard');
     }
-
     // Show 2FA page
     public function show2FA()
     {
@@ -134,8 +131,8 @@ class AuthController extends Controller
 
         session()->regenerate();
         session([
-            'user_id'   => $user->id,
-            'username'  => $user->username,
+            'user_id' => $user->id,
+            'username' => $user->username,
             'user_role' => $user->role,
         ]);
 

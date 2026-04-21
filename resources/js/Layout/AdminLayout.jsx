@@ -9,7 +9,6 @@ export default function AdminLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
             <aside className="w-56 bg-green-800 text-white flex flex-col fixed h-full">
                 <div className="px-6 py-6 border-b border-green-700">
                     <p className="font-medium text-sm">JURUKUR VISI</p>
@@ -42,8 +41,6 @@ export default function AdminLayout({ children }) {
                     </button>
                 </div>
             </aside>
-
-            {/* Main content */}
             <main className="ml-56 flex-1 p-8">{children}</main>
         </div>
     );
