@@ -1,5 +1,6 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { useState } from "react";
+import ToastContainer from "../Components/ToastContainer";
 
 export default function AdminLayout({ children }) {
     const { auth } = usePage().props;
@@ -84,6 +85,7 @@ export default function AdminLayout({ children }) {
                 </div>
                 <div className="p-4 lg:p-8">{children}</div>
             </main>
+            <ToastContainer />
         </div>
     );
 }

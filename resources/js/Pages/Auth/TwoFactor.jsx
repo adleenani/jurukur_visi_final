@@ -1,4 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
+import ToastContainer from '../../Components/ToastContainer';
 
 export default function TwoFactor() {
     const { errors = {} } = usePage().props;
@@ -14,6 +15,7 @@ export default function TwoFactor() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <ToastContainer/>
             <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-md border border-gray-100">
                 <h1 className="text-2xl font-medium text-green-800 text-center mb-2">
                     JURUKUR VISI

@@ -146,6 +146,6 @@ class AuthController extends Controller
         session()->flush();
         session()->regenerate();
         return redirect()->route('login')
-            ->with('message', 'You have been logged out.');
+            ->with('message', 'You have been logged out successfully.');
     }
 }

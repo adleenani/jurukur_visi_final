@@ -35,7 +35,7 @@ class BookingController extends Controller
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')->with('success', 'Booking confirmed!');
+        return redirect()->route('admin.bookings')->with('success', 'Booking confirmed successfully!!');
     }
 
     public function reschedule(Request $request, $reference_number)
@@ -49,7 +49,7 @@ class BookingController extends Controller
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')->with('success', 'Booking rescheduled!');
+        return redirect()->route('admin.bookings')->with('success', 'Booking rescheduled successfully!!');
     }
 
     public function cancel(Request $request, $reference_number)
