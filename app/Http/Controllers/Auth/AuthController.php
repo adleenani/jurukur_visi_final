@@ -26,10 +26,10 @@ class AuthController extends Controller
     public function signup(Request $request)
     {
         $validated = $request->validate([
-            'username'  => 'required|min:4|max:30|alpha_num|unique:users,username',
+            'username' => 'required|min:4|max:30|alpha_num|unique:users,username',
             'full_name' => 'required|string|max:100',
-            'email'     => 'required|email|max:100|unique:users,email',
-            'password'  => [
+            'email' => 'required|email|max:100|unique:users,email',
+            'password' => [
                 'required',
                 'min:14',
                 'regex:/[A-Z]/',
@@ -38,11 +38,11 @@ class AuthController extends Controller
         ]);
 
         User::create([
-            'username'  => $validated['username'],
+            'username' => $validated['username'],
             'full_name' => $validated['full_name'],
-            'email'     => $validated['email'],
-            'password'  => password_hash($validated['password'], PASSWORD_ARGON2ID),
-            'role'      => 'pic',
+            'email' => $validated['email'],
+            'password' => password_hash($validated['password'], PASSWORD_ARGON2ID),
+            'role' => 'pic',
             'is_active' => false,
         ]);
 
@@ -136,13 +136,11 @@ class AuthController extends Controller
     {
         $request->validate(['code' => 'required|digits:6']);
 
-        // Check session exists
         if (!session('2fa_user_id')) {
             return redirect()->route('login')
                 ->withErrors(['code' => 'Session expired. Please login again.']);
         }
 
-        // Check session not expired
         if (now()->timestamp > session('2fa_expires')) {
             session()->forget(['2fa_user_id', '2fa_expires']);
             return redirect()->route('login')
@@ -155,27 +153,87 @@ class AuthController extends Controller
             return redirect()->route('login');
         }
 
-        // Verify OTP
         if (!Hash::check($request->code, $user->tfa_code)) {
             return back()->withErrors(['code' => 'Invalid verification code. Please try again.']);
         }
 
-        // Clear OTP from DB
+        // Clear OTP
         $user->update(['tfa_code' => null]);
-
-        // Clear 2FA session data
         session()->forget(['2fa_user_id', '2fa_expires']);
 
-        // Create real authenticated session
+        // Create session
         session()->regenerate();
         session([
-            'user_id'   => $user->id,
-            'username'  => $user->username,
+            'user_id' => $user->id,
+            'username' => $user->username,
             'user_role' => $user->role,
+            'must_change_password' => $user->must_change_password,
         ]);
+
+        // Force password change if needed
+        if ($user->must_change_password) {
+            return redirect()->route('password.change')
+                ->with('message', 'Welcome! Please set your own password before continuing.');
+        }
 
         return redirect()->route('dashboard')
             ->with('success', 'Welcome back, ' . $user->full_name . '!');
+    }
+
+    public function showChangePassword()
+    {
+        // Must be logged in
+        if (!session('user_id')) {
+            return redirect()->route('login');
+        }
+
+        // If they don't need to change password, redirect to dashboard
+        if (!session('must_change_password')) {
+            return redirect()->route('dashboard');
+        }
+
+        return Inertia::render('Auth/ChangePassword');
+    }
+
+    public function changePassword(Request $request)
+    {
+        if (!session('user_id')) {
+            return redirect()->route('login');
+        }
+
+        $request->validate([
+            'password' => [
+                'required',
+                'min:14',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'confirmed', // requires password_confirmation field
+            ],
+        ], [
+            'password.confirmed' => 'Passwords do not match.',
+            'password.min' => 'Password must be at least 14 characters.',
+            'password.regex' => 'Password must contain at least one uppercase letter and one number.',
+        ]);
+
+        $user = User::find(session('user_id'));
+
+        // Make sure new password is different from old one
+        if (password_verify($request->password, $user->password)) {
+            return back()->withErrors([
+                'password' => 'Your new password must be different from your current password.',
+            ]);
+        }
+
+        $user->update([
+            'password' => password_hash($request->password, PASSWORD_ARGON2ID),
+            'must_change_password' => false,
+        ]);
+
+        // Update session
+        session(['must_change_password' => false]);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Password changed successfully! Welcome to Jurukur Visi.');
     }
 
     public function logout()

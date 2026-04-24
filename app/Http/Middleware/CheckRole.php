@@ -14,6 +14,11 @@ class CheckRole
                 ->withErrors(['auth' => 'Please login to access this page.']);
         }
 
+        // Allow access to change password page even if must_change_password is true
+        if (session('must_change_password') && !$request->is('change-password')) {
+            return redirect()->route('password.change');
+        }
+
         if (session('user_role') !== $role && session('user_role') !== 'admin') {
             abort(403, 'Unauthorized.');
         }

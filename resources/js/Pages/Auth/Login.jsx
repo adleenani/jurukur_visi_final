@@ -1,6 +1,7 @@
 import { useForm, usePage } from "@inertiajs/react";
 import ToastContainer from "../../Components/ToastContainer";
 import { useState } from "react";
+import { FaHome } from "react-icons/fa";
 
 export default function Login() {
     const { errors = {} } = usePage().props;
@@ -108,15 +109,13 @@ export default function Login() {
                 </form>
 
                 {/* Footer Links */}
-                <div className="flex justify-between mt-6 text-sm">
+                <div className="flex justify-end mt-6 text-sm">
                     <a
-                        href="/signup"
-                        className="text-green-700 hover:underline"
+                        href="/"
+                        className="flex items-center gap-2 text-gray-400 hover:underline"
                     >
-                        Create account
-                    </a>
-                    <a href="/" className="text-gray-400 hover:underline">
-                        Back to home
+                        <FaHome />
+                        <span>Back to home</span>
                     </a>
                 </div>
             </div>

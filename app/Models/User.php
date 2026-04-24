@@ -13,6 +13,7 @@ class User extends Model
         'password',
         'role',
         'is_active',
+        'must_change_password',
         'tfa_code',
         'lockout_until',
         'failed_attempts',

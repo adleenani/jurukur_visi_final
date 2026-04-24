@@ -33,7 +33,7 @@ class PublicController extends Controller
     {
         $request->validate([
             'name' => 'required|string|min:2|max:100|regex:/^[a-zA-Z\s]+$/',
-            'email' => 'required|email:rfc,dns|max:100',
+            'email' => 'required|email|max:100',
             'phone' => 'required|string|max:20|regex:/^[0-9\+\-\s\(\)]+$/',
             'service_type' => 'required|string|max:100',
             'preferred_date' => 'required|date|after:today',

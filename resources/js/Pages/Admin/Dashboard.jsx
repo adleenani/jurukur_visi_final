@@ -38,19 +38,6 @@ export default function Dashboard({
             bg: "#2563eb",
             icon: "📊",
         },
-
-        {
-            label: "Total Projects",
-            value: stats.total,
-            bg: "#15803d",
-            icon: "📁",
-        },
-        {
-            label: "Pending Bookings",
-            value: stats.pending_bookings,
-            bg: "#d97706",
-            icon: "📅",
-        },
         {
             label: "Pending Staff",
             value: stats.pending_users ?? 0,
@@ -93,7 +80,7 @@ export default function Dashboard({
             </div>
 
             {/* Stat cards */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-4 mb-6">
                 {statCards.map(({ label, value, bg, icon }) => (
                     <div
                         key={label}

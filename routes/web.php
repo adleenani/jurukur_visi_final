@@ -13,15 +13,19 @@ Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/projects', [PublicController::class, 'projects'])->name('projects');
 Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
 Route::post('/contact', [PublicController::class, 'submitContact'])->name('contact.submit');
+Route::get('/booking-status', [PublicController::class, 'bookingStatus'])->name('booking.status');
+Route::post('/booking-status', [PublicController::class, 'checkBookingStatus'])->name('booking.status.check');
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
-Route::post('/signup', [AuthController::class, 'signup']);
 Route::get('/2fa', [AuthController::class, 'show2FA'])->name('2fa.show');
 Route::post('/2fa', [AuthController::class, 'verify2FA'])->name('2fa.verify');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Change password (forced on first login)
+Route::get('/change-password', [AuthController::class, 'showChangePassword'])->name('password.change');
+Route::post('/change-password', [AuthController::class, 'changePassword'])->name('password.update');
 
 // Protected routes (PIC only)
 Route::middleware(['role:pic'])->group(function () {
@@ -30,6 +34,10 @@ Route::middleware(['role:pic'])->group(function () {
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
     Route::post('/admin/users/{id}/approve', [UserController::class, 'approve'])->name('admin.users.approve');
     Route::post('/admin/users/{id}/reject', [UserController::class, 'reject'])->name('admin.users.reject');
+    Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/admin/users/create', [UserController::class, 'store'])->name('admin.users.store');
+    Route::post('/admin/users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('admin.users.reset');
+    Route::post('/admin/users/{id}/delete', [UserController::class, 'destroy'])->name('admin.users.delete');
 
     // Project management
     Route::get('/dashboard', [ProjectController::class, 'dashboard'])->name('dashboard');

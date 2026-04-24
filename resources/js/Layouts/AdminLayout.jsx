@@ -38,7 +38,7 @@ export default function AdminLayout({ children }) {
                         { label: "Dashboard", href: "/dashboard" },
                         { label: "Projects", href: "/admin/projects" },
                         { label: "Bookings", href: "/admin/bookings" },
-                        { label: "Staff", href: "/admin/users" },
+                        { label: 'Staff',    href: '/admin/users' },
                     ].map(({ label, href }) => (
                         <Link
                             key={href}
