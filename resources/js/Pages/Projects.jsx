@@ -1,5 +1,5 @@
 import Navbar from "../Components/Navbar";
-import PublicLayout from "../Layout/PublicLayout";
+import PublicLayout from "../Layouts/PublicLayout";
 
 const statusStyle = {
     active: "bg-green-100 text-green-800",

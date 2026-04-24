@@ -6,6 +6,7 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
+
 class ProjectController extends Controller
 {
     // Dashboard
@@ -15,6 +16,12 @@ class ProjectController extends Controller
             'total' => Project::count(),
             'recent' => Project::orderBy('created_at', 'desc')->take(5)->get(),
             'pending_bookings' => \App\Models\ConsultationBooking::where('status', 'pending')->count(),
+            'total_bookings' => \App\Models\ConsultationBooking::count(),
+            'pending_booking_list' => \App\Models\ConsultationBooking::where('status', 'pending')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
+            'pending_users' => \App\Models\User::where('is_active', false)->where('role', 'pic')->count(),
         ];
 
         return Inertia::render('Admin/Dashboard', compact('stats'));

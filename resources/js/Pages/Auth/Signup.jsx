@@ -1,8 +1,10 @@
 import { useForm, usePage } from "@inertiajs/react";
-import ToastContainer from '../../Components/ToastContainer';
+import ToastContainer from "../../Components/ToastContainer";
+import { useState } from "react";
 
 export default function Signup() {
     const { errors = {}, flash = {} } = usePage().props;
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing } = useForm({
         username: "",
         full_name: "",
@@ -18,6 +20,7 @@ export default function Signup() {
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <ToastContainer />
+
             <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-md border border-gray-100">
                 <h1 className="text-2xl font-medium text-green-800 text-center mb-2">
                     JURUKUR VISI
@@ -26,65 +29,109 @@ export default function Signup() {
                     Create Staff Account
                 </h2>
 
-                {flash.message && (
-                    <div className="bg-green-50 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
-                        {flash.message}
+                    <form onSubmit={submit} className="space-y-5">
+                    {/* Username */}
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            value={data.username}
+                            onChange={(e) =>
+                                setData("username", e.target.value)
+                            }
+                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                            required
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                            4–30 characters
+                        </p>
                     </div>
-                )}
 
-                {Object.keys(errors).length > 0 && (
-                    <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm space-y-1">
-                        {Object.values(errors).map((e, i) => (
-                            <p key={i}>{e}</p>
-                        ))}
+                    {/* Full Name */}
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                            Full Name
+                        </label>
+                        <input
+                            type="text"
+                            value={data.full_name}
+                            onChange={(e) =>
+                                setData("full_name", e.target.value)
+                            }
+                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                            required
+                        />
                     </div>
-                )}
 
-                <form onSubmit={submit} className="space-y-5">
-                    {[
-                        {
-                            label: "Username",
-                            key: "username",
-                            type: "text",
-                            hint: "4–30 characters",
-                        },
-                        {
-                            label: "Full Name",
-                            key: "full_name",
-                            type: "text",
-                            hint: "",
-                        },
-                        {
-                            label: "Email Address",
-                            key: "email",
-                            type: "email",
-                            hint: "",
-                        },
-                        {
-                            label: "Password",
-                            key: "password",
-                            type: "password",
-                            hint: "Min 14 chars, 1 uppercase, 1 number",
-                        },
-                    ].map(({ label, key, type, hint }) => (
-                        <div key={key}>
-                            <label className="block text-sm text-gray-600 mb-1">
-                                {label}
-                            </label>
+                    {/* Email */}
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            value={data.email}
+                            onChange={(e) => setData("email", e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                            required
+                        />
+                    </div>
+
+                    {/* Password with eye toggle */}
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">
+                            Password
+                        </label>
+                        <div className="relative">
                             <input
-                                type={type}
-                                value={data[key]}
-                                onChange={(e) => setData(key, e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                                type={showPassword ? "text" : "password"}
+                                value={data.password}
+                                onChange={(e) =>
+                                    setData("password", e.target.value)
+                                }
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 pr-10"
                                 required
                             />
-                            {hint && (
-                                <p className="text-xs text-gray-400 mt-1">
-                                    {hint}
-                                </p>
-                            )}
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                tabIndex={-1}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                            >
+                                {showPassword ? (
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22" />
+                                    </svg>
+                                ) : (
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                )}
+                            </button>
                         </div>
-                    ))}
+                        <p className="text-xs text-gray-400 mt-1">
+                            Min 14 chars, 1 uppercase, 1 number
+                        </p>
+                    </div>
+                    
+                    {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={processing}

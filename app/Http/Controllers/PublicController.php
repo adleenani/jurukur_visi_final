@@ -42,8 +42,10 @@ class PublicController extends Controller
             'message' => 'nullable|string|max:1000',
         ]);
 
+        $referenceNumber = (string) \Illuminate\Support\Str::uuid();
+
         ConsultationBooking::create([
-            'reference_number' => (string) \Illuminate\Support\Str::uuid(),
+            'reference_number' => $referenceNumber,
             'name' => strip_tags($request->name),
             'email' => $request->email,
             'phone' => strip_tags($request->phone),
@@ -55,6 +57,31 @@ class PublicController extends Controller
             'status' => 'pending',
         ]);
 
-        return back()->with('success', 'Booking submitted! We will confirm your appointment within 1-2 business days.');
+        return back()->with('success', "Booking submitted! Your reference number is: {$referenceNumber} — save this to check your booking status.");
+    }
+
+    public function bookingStatus()
+    {
+        return Inertia::render('BookingStatus', [
+            'booking' => null,
+            'searched' => false,
+        ]);
+    }
+
+    public function checkBookingStatus(Request $request)
+    {
+        $request->validate([
+            'reference_number' => 'required|string|max:100',
+        ]);
+
+        $booking = ConsultationBooking::where(
+            'reference_number',
+            strip_tags($request->reference_number)
+        )->first();
+
+        return Inertia::render('BookingStatus', [
+            'booking' => $booking,
+            'searched' => true,
+        ]);
     }
 }

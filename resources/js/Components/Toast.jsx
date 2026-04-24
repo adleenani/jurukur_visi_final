@@ -1,18 +1,30 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-export default function Toast({ message, sub, type = 'success', onClose }) {
+export default function Toast({ message, type = "success", onClose }) {
     const [visible, setVisible] = useState(true);
 
     const colors = {
-        success: { bg: '#dcfce7', text: '#166534', bar: '#16a34a', ring: '#16a34a' },
-        error:   { bg: '#fee2e2', text: '#991b1b', bar: '#dc2626', ring: '#dc2626' },
-        info:    { bg: '#dbeafe', text: '#1e40af', bar: '#2563eb', ring: '#2563eb' },
+        success: {
+            bg: "#15803d",
+            ring: "rgba(255,255,255,0.3)",
+            bar: "rgba(255,255,255,0.5)",
+        },
+        error: {
+            bg: "#dc2626",
+            ring: "rgba(255,255,255,0.3)",
+            bar: "rgba(255,255,255,0.5)",
+        },
+        info: {
+            bg: "#1d4ed8",
+            ring: "rgba(255,255,255,0.3)",
+            bar: "rgba(255,255,255,0.5)",
+        },
     };
 
     const icons = {
-        success: '✓',
-        error:   '✕',
-        info:    'i',
+        success: "✓",
+        error: "✕",
+        info: "i",
     };
 
     const c = colors[type] ?? colors.success;
@@ -21,92 +33,122 @@ export default function Toast({ message, sub, type = 'success', onClose }) {
         const timer = setTimeout(() => {
             setVisible(false);
             setTimeout(onClose, 300);
-        }, 3000);
+        }, 10000);
         return () => clearTimeout(timer);
     }, []);
 
     return (
         <div
             style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '12px',
-                padding: '14px',
-                background: 'white',
-                borderRadius: '12px',
-                border: '0.5px solid #e5e7eb',
-                minWidth: '290px',
-                maxWidth: '340px',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "14px 18px",
+                background: c.bg,
+                borderRadius: "16px",
+                position: "relative",
+                overflow: "hidden",
+                maxWidth: "380px",
+                width: "max-content",
                 animation: visible
-                    ? 'toastIn 0.35s cubic-bezier(.21,1.02,.73,1) forwards'
-                    : 'toastOut 0.3s ease forwards',
+                    ? "toastUp 0.35s cubic-bezier(.21,1.02,.73,1) forwards"
+                    : "toastDown 0.3s ease forwards",
             }}
         >
-            {/* Avatar icon */}
-            <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: c.bg,
-                color: c.text,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px',
-                fontWeight: 600,
-                flexShrink: 0,
-            }}>
-                {icons[type]}
-            </div>
-
-            {/* Text */}
-            <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '13px', fontWeight: 500, color: '#111827', margin: 0 }}>
-                    {message}
-                </p>
-                {sub && (
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: '3px 0 0' }}>
-                        {sub}
-                    </p>
-                )}
-            </div>
-
-            {/* Circular timer close button */}
-            <div
-                onClick={() => { setVisible(false); setTimeout(onClose, 300); }}
-                style={{ position: 'relative', width: '22px', height: '22px', flexShrink: 0, cursor: 'pointer', marginTop: '2px' }}
+            {/* Icon */}
+            <span
+                style={{
+                    fontSize: "15px",
+                    color: "white",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                }}
             >
-                <svg width="22" height="22" viewBox="0 0 22 22" style={{ transform: 'rotate(-90deg)' }}>
-                    <circle cx="11" cy="11" r="9" fill="none" stroke="#e5e7eb" strokeWidth="2.5"/>
+                {icons[type]}
+            </span>
+
+            {/* Message */}
+            <span
+                style={{
+                    fontSize: "14px",
+                    color: "white",
+                    lineHeight: "1.6",
+                    wordBreak: "break-word",
+                    whiteSpace: "pre-line",
+                    flex: 1,
+                }}
+            >
+                {message}
+            </span>
+
+            {/* Timer close button */}
+            <div
+                onClick={() => {
+                    setVisible(false);
+                    setTimeout(onClose, 300);
+                }}
+                style={{
+                    position: "relative",
+                    width: "24px",
+                    height: "24px",
+                    flexShrink: 0,
+                    cursor: "pointer",
+                }}
+            >
+                <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    style={{ transform: "rotate(-90deg)" }}
+                >
                     <circle
-                        cx="11" cy="11" r="9"
+                        cx="12"
+                        cy="12"
+                        r="10"
                         fill="none"
-                        stroke={c.ring}
+                        stroke="rgba(255,255,255,0.25)"
+                        strokeWidth="2.5"
+                    />
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        fill="none"
+                        stroke="white"
                         strokeWidth="2.5"
                         strokeLinecap="round"
-                        strokeDasharray="57"
+                        strokeDasharray="63"
                         strokeDashoffset="0"
-                        style={{ animation: 'toastCountdown 3s linear forwards' }}
+                        style={{
+                            animation: "toastCountdown 10s linear forwards",
+                        }}
                     />
                 </svg>
-                <span style={{
-                    position: 'absolute', top: '50%', left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    fontSize: '9px', color: '#9ca3af',
-                }}>✕</span>
+                <span
+                    style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        fontSize: "9px",
+                        color: "rgba(255,255,255,0.8)",
+                    }}
+                >
+                    ✕
+                </span>
             </div>
 
-            {/* Bottom progress bar */}
-            <div style={{
-                position: 'absolute',
-                bottom: 0, left: 0,
-                height: '2px',
-                background: c.bar,
-                animation: 'toastShrink 3s linear forwards',
-            }}/>
+            {/* Progress bar */}
+            <div
+                style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    height: "3px",
+                    background: c.bar,
+                    animation: "toastShrink 10s linear forwards",
+                }}
+            />
         </div>
     );
 }

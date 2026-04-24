@@ -5,17 +5,25 @@ export default function Navbar() {
     const [open, setOpen] = useState(false);
 
     return (
-        <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-50 shadow-sm">
             <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-                <Link
-                    href="/"
-                    className="text-green-800 font-medium text-lg tracking-wide"
-                >
-                    JURUKUR VISI
+                <Link href="/" className="flex items-center gap-2.5">
+                    <img
+                        src="/images/jvisi_logo.png"
+                        alt="Jurukur Visi Logo"
+                        style={{
+                            height: "27px",
+                            width: "auto",
+                            objectFit: "contain",
+                        }}
+                    />
+                    <span className="text-green-800 font-bold text-lg tracking-wide">
+                        JURUKUR VISI
+                    </span>
                 </Link>
 
                 {/* Desktop links */}
-                <div className="hidden md:flex items-center gap-8 text-sm">
+                <div className="hidden md:flex items-center gap-8 text-sm font-bold">
                     <Link
                         href="/"
                         className="text-gray-600 hover:text-green-700 transition"
@@ -32,7 +40,13 @@ export default function Navbar() {
                         href="/contact"
                         className="text-gray-600 hover:text-green-700 transition"
                     >
-                        Contact
+                        Book a Consultation
+                    </Link>
+                    <Link
+                        href="/booking-status"
+                        className="text-gray-600 hover:text-green-700 transition"
+                    >
+                        Check Booking
                     </Link>
                     <Link
                         href="/login"

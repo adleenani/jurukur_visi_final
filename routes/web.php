@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BookingController;
 use Inertia\Inertia;
 
 // Public routes
@@ -24,6 +25,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected routes (PIC only)
 Route::middleware(['role:pic'])->group(function () {
+
+    // PIC management     
+    Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
+    Route::post('/admin/users/{id}/approve', [UserController::class, 'approve'])->name('admin.users.approve');
+    Route::post('/admin/users/{id}/reject', [UserController::class, 'reject'])->name('admin.users.reject');
+
+    // Project management
     Route::get('/dashboard', [ProjectController::class, 'dashboard'])->name('dashboard');
     Route::get('/admin/projects', [ProjectController::class, 'index'])->name('admin.projects');
     Route::get('/admin/projects/create', [ProjectController::class, 'create'])->name('admin.projects.create');

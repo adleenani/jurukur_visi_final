@@ -6,47 +6,43 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class AuthController extends Controller
 {
-    // Show login page
     public function showLogin()
     {
         return Inertia::render('Auth/Login');
     }
 
-    // Show signup page
     public function showSignup()
     {
         return Inertia::render('Auth/Signup');
     }
 
-    // Handle signup
     public function signup(Request $request)
     {
         $validated = $request->validate([
-            'username' => 'required|min:4|max:30|alpha_num|unique:users,username',
-            'full_name' => 'required|string|max:100|regex:/^[a-zA-Z\s]+$/',
-            'email' => 'required|email:rfc|max:100|unique:users,email',
-            'password' => [
+            'username'  => 'required|min:4|max:30|alpha_num|unique:users,username',
+            'full_name' => 'required|string|max:100',
+            'email'     => 'required|email|max:100|unique:users,email',
+            'password'  => [
                 'required',
                 'min:14',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
-                'regex:/[^A-Za-z0-9]/',
             ],
         ]);
 
         User::create([
-            'username' => $validated['username'],
+            'username'  => $validated['username'],
             'full_name' => $validated['full_name'],
-            'email' => $validated['email'],
-            'password' => password_hash($validated['password'], PASSWORD_ARGON2ID),
-            'role' => 'pic',
+            'email'     => $validated['email'],
+            'password'  => password_hash($validated['password'], PASSWORD_ARGON2ID),
+            'role'      => 'pic',
             'is_active' => false,
         ]);
 
@@ -54,7 +50,6 @@ class AuthController extends Controller
             ->with('message', 'Account created! Wait for admin approval before logging in.');
     }
 
-    // Handle login
     public function login(Request $request)
     {
         $request->validate([
@@ -64,83 +59,125 @@ class AuthController extends Controller
 
         $key = 'login.' . $request->ip();
 
+        // Rate limiting — 3 attempts max
         if (RateLimiter::tooManyAttempts($key, 3)) {
             $seconds = RateLimiter::availableIn($key);
             return back()->withErrors([
-                'username' => "Too many attempts. Try again in " . ceil($seconds / 60) . " minutes."
+                'username' => 'Too many attempts. Try again in ' . ceil($seconds / 60) . ' minutes.',
             ]);
         }
 
         $user = User::where('username', $request->username)->first();
 
-        if (!$user) {
+        // Check credentials
+        if (!$user || !password_verify($request->password, $user->password)) {
             RateLimiter::hit($key, 900);
             return back()->withErrors(['username' => 'Invalid username or password.']);
         }
 
-        $passwordValid = password_verify($request->password, $user->password)
-            || \Illuminate\Support\Facades\Hash::check($request->password, $user->password);
-
-        if (!$passwordValid) {
-            RateLimiter::hit($key, 900);
-            return back()->withErrors(['username' => 'Invalid username or password.']);
-        }
-
+        // Check account approved
         if (!$user->is_active) {
             return back()->withErrors(['username' => 'Your account is pending admin approval.']);
         }
 
-        // Skip 2FA for now — go straight to dashboard
-        RateLimiter::clear($key);
-        session()->regenerate();
+        // Generate 6-digit OTP
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Store hashed OTP in DB
+        $user->update(['tfa_code' => Hash::make($code)]);
+
+        // Send email
+        try {
+            Mail::raw(
+                "Hello {$user->full_name},\n\n" .
+                "Your Jurukur Visi login verification code is:\n\n" .
+                "    {$code}\n\n" .
+                "This code expires in 10 minutes.\n\n" .
+                "If you did not request this, please ignore this email.\n\n" .
+                "— Jurukur Visi System",
+                function ($message) use ($user) {
+                    $message->to($user->email)
+                        ->subject('Your Jurukur Visi Login Code');
+                }
+            );
+        } catch (\Exception $e) {
+            Log::error('2FA email failed: ' . $e->getMessage());
+            return back()->withErrors(['username' => 'Failed to send verification email. Please try again.']);
+        }
+
+        // Store temp session for 2FA
         session([
-            'user_id' => $user->id,
-            'username' => $user->username,
-            'user_role' => $user->role,
+            '2fa_user_id' => $user->id,
+            '2fa_expires' => now()->addMinutes(10)->timestamp,
         ]);
 
-        return redirect()->route('dashboard');
+        RateLimiter::clear($key);
+
+        return redirect()->route('2fa.show');
     }
-    // Show 2FA page
+
     public function show2FA()
     {
         if (!session('2fa_user_id')) {
             return redirect()->route('login');
         }
+
+        // Check if 2FA session expired
+        if (now()->timestamp > session('2fa_expires')) {
+            session()->forget(['2fa_user_id', '2fa_expires']);
+            return redirect()->route('login')
+                ->withErrors(['username' => 'Session expired. Please login again.']);
+        }
+
         return Inertia::render('Auth/TwoFactor');
     }
 
-    // Verify 2FA code
     public function verify2FA(Request $request)
     {
         $request->validate(['code' => 'required|digits:6']);
 
-        if (!session('2fa_user_id') || now()->gt(session('2fa_expires'))) {
+        // Check session exists
+        if (!session('2fa_user_id')) {
             return redirect()->route('login')
                 ->withErrors(['code' => 'Session expired. Please login again.']);
         }
 
-        $user = User::find(session('2fa_user_id'));
-
-        if (!$user || !Hash::check($request->code, $user->tfa_code)) {
-            return back()->withErrors(['code' => 'Invalid or expired code.']);
+        // Check session not expired
+        if (now()->timestamp > session('2fa_expires')) {
+            session()->forget(['2fa_user_id', '2fa_expires']);
+            return redirect()->route('login')
+                ->withErrors(['username' => 'Verification code expired. Please login again.']);
         }
 
-        // Clear 2FA code and create real session
+        $user = User::find(session('2fa_user_id'));
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Verify OTP
+        if (!Hash::check($request->code, $user->tfa_code)) {
+            return back()->withErrors(['code' => 'Invalid verification code. Please try again.']);
+        }
+
+        // Clear OTP from DB
         $user->update(['tfa_code' => null]);
+
+        // Clear 2FA session data
         session()->forget(['2fa_user_id', '2fa_expires']);
 
+        // Create real authenticated session
         session()->regenerate();
         session([
-            'user_id' => $user->id,
-            'username' => $user->username,
+            'user_id'   => $user->id,
+            'username'  => $user->username,
             'user_role' => $user->role,
         ]);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')
+            ->with('success', 'Welcome back, ' . $user->full_name . '!');
     }
 
-    // Logout
     public function logout()
     {
         session()->flush();

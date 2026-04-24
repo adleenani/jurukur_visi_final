@@ -1,4 +1,4 @@
-import AdminLayout from "../../../Layout/AdminLayout";
+import AdminLayout from "../../../Layouts/AdminLayout";
 import { useForm } from "@inertiajs/react";
 
 const services = [
@@ -57,8 +57,9 @@ export default function Create() {
                 </p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 p-8 max-w-2xl">
+            <div className="bg-white rounded-xl border border-gray-100 p-8 max-auto">
                 <form onSubmit={submit} className="space-y-6">
+
                     {/* Project ID + Name */}
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
@@ -217,6 +218,7 @@ export default function Create() {
                         />
                     </div>
 
+                    {/* Submit Button */}
                     <div className="flex gap-3">
                         <button
                             type="submit"

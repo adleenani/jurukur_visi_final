@@ -1,4 +1,4 @@
-import AdminLayout from "../../../Layout/AdminLayout";
+import AdminLayout from "../../../Layouts/AdminLayout";
 import { router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
@@ -180,6 +180,8 @@ export default function Index({ bookings, stats }) {
                                     >
                                         {getInitials(booking.name)}
                                     </div>
+
+                                    {/* Name and Status */}
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <p className="font-medium text-gray-800 text-sm">
@@ -202,13 +204,18 @@ export default function Index({ bookings, stats }) {
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Action Buttons */}
                                 <div className="flex items-center gap-2 flex-shrink-0">
+                                    {/* Manage Button */}
                                     <button
                                         onClick={() => openModal(booking)}
                                         className="px-3 py-1.5 bg-green-700 text-white rounded-lg text-xs hover:bg-green-800 transition"
                                     >
                                         Manage
                                     </button>
+
+                                    {/* Delete Button */}
                                     <button
                                         onClick={() =>
                                             deleteBooking(
@@ -235,7 +242,8 @@ export default function Index({ bookings, stats }) {
                         if (e.target === e.currentTarget) closeModal();
                     }}
                 >
-                    <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden border border-gray-100">
+                    {/* Modal Content */}
+                    <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden border border-gray-100">
                         {/* Modal header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                             <div>
@@ -313,12 +321,18 @@ export default function Index({ bookings, stats }) {
                                     ].map(({ label, value }) => (
                                         <div
                                             key={label}
-                                            className="flex justify-between text-xs py-1.5 border-b border-gray-50"
+                                            className="flex gap-3 text-xs py-1.5 border-b border-gray-50"
                                         >
-                                            <span className="text-gray-400">
+                                            <span className="text-gray-400 flex-shrink-0 w-24">
                                                 {label}
                                             </span>
-                                            <span className="text-gray-700 text-right max-w-32 truncate">
+                                            <span
+                                                className="text-gray-700 font-medium"
+                                                style={{
+                                                    wordBreak: "break-word",
+                                                    whiteSpace: "normal",
+                                                }}
+                                            >
                                                 {value}
                                             </span>
                                         </div>

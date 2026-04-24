@@ -1,6 +1,6 @@
 import Navbar from "../Components/Navbar";
 import { useForm, usePage } from "@inertiajs/react";
-import PublicLayout from "../Layout/PublicLayout";
+import PublicLayout from "../Layouts/PublicLayout";
 
 const services = [
     "Consultant and Survey Services in Cadastral",
@@ -56,11 +56,11 @@ export default function Contact() {
                         appointment within 1–2 business days.
                     </p>
 
-                    {flash.success && (
+                    {/* {flash.success && (
                         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-4 rounded-xl mb-8 text-sm">
                             {flash.success}
                         </div>
-                    )}
+                    )} */}
 
                     <form
                         onSubmit={submit}
