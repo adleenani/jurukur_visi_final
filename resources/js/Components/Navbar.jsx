@@ -4,15 +4,24 @@ import { useState } from "react";
 export default function Navbar() {
     const [open, setOpen] = useState(false);
 
+    const links = [
+        { label: "Home", href: "/" },
+        { label: "About", href: "/about" },
+        { label: "Projects", href: "/projects" },
+        { label: "Book a Consultation", href: "/book-a-consultation" },
+        { label: "Check Booking", href: "/booking-status" },
+    ];
+
     return (
         <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-50 shadow-sm">
             <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                {/* Logo + Brand */}
                 <Link href="/" className="flex items-center gap-2.5">
                     <img
                         src="/images/jvisi_logo.png"
                         alt="Jurukur Visi Logo"
                         style={{
-                            height: "27px",
+                            height: "38px",
                             width: "auto",
                             objectFit: "contain",
                         }}
@@ -23,34 +32,19 @@ export default function Navbar() {
                 </Link>
 
                 {/* Desktop links */}
-                <div className="hidden md:flex items-center gap-8 text-sm font-bold">
-                    <Link
-                        href="/"
-                        className="text-gray-600 hover:text-green-700 transition"
-                    >
-                        Home
-                    </Link>
-                    <Link
-                        href="/projects"
-                        className="text-gray-600 hover:text-green-700 transition"
-                    >
-                        Projects
-                    </Link>
-                    <Link
-                        href="/contact"
-                        className="text-gray-600 hover:text-green-700 transition"
-                    >
-                        Book a Consultation
-                    </Link>
-                    <Link
-                        href="/booking-status"
-                        className="text-gray-600 hover:text-green-700 transition"
-                    >
-                        Check Booking
-                    </Link>
+                <div className="hidden md:flex items-center gap-6 text-sm">
+                    {links.map(({ label, href }) => (
+                        <Link
+                            key={href}
+                            href={href}
+                            className="text-gray-600 hover:text-green-700 transition font-medium"
+                        >
+                            {label}
+                        </Link>
+                    ))}
                     <Link
                         href="/login"
-                        className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition"
+                        className="bg-green-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-800 transition text-sm"
                     >
                         Staff Login
                     </Link>
@@ -60,6 +54,7 @@ export default function Navbar() {
                 <button
                     onClick={() => setOpen(!open)}
                     className="md:hidden text-gray-600 p-1"
+                    aria-label="Toggle menu"
                 >
                     <svg
                         width="22"
@@ -80,28 +75,28 @@ export default function Navbar() {
 
             {/* Mobile menu */}
             {open && (
-                <div className="md:hidden border-t border-gray-100 px-6 py-4 space-y-3 text-sm bg-white">
-                    {[
-                        { label: "Home", href: "/" },
-                        { label: "Projects", href: "/projects" },
-                        { label: "Contact", href: "/contact" },
-                    ].map(({ label, href }) => (
-                        <Link
-                            key={href}
-                            href={href}
-                            onClick={() => setOpen(false)}
-                            className="block text-gray-600 hover:text-green-700 py-1"
-                        >
-                            {label}
-                        </Link>
-                    ))}
-                    <Link
-                        href="/login"
-                        onClick={() => setOpen(false)}
-                        className="block bg-green-700 text-white px-4 py-2 rounded-lg text-center hover:bg-green-800 transition"
-                    >
-                        Staff Login
-                    </Link>
+                <div className="md:hidden border-t border-gray-100 bg-white shadow-md">
+                    <div className="px-6 py-4 space-y-1">
+                        {links.map(({ label, href }) => (
+                            <Link
+                                key={href}
+                                href={href}
+                                onClick={() => setOpen(false)}
+                                className="flex items-center py-3 text-sm font-medium text-gray-700 hover:text-green-700 border-b border-gray-50 transition"
+                            >
+                                {label}
+                            </Link>
+                        ))}
+                        <div className="pt-3">
+                            <Link
+                                href="/login"
+                                onClick={() => setOpen(false)}
+                                className="block w-full text-center bg-green-700 text-white px-4 py-3 rounded-full font-semibold hover:bg-green-800 transition text-sm"
+                            >
+                                Staff Login
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             )}
         </nav>

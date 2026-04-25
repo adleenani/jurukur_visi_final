@@ -39,8 +39,8 @@ export default function Dashboard({
             icon: "📊",
         },
         {
-            label: "Pending Staff",
-            value: stats.pending_users ?? 0,
+            label: "Total Staff",
+            value: stats.total_users ?? 0,
             bg: "#7c3aed",
             icon: "👤",
         },

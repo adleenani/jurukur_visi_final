@@ -4,18 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\ConsultationBooking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class BookingController extends Controller
 {
-    // View all bookings
     public function index()
     {
         $bookings = ConsultationBooking::orderBy('created_at', 'desc')->get();
 
         $stats = [
-            'total' => $bookings->count(),
-            'pending' => $bookings->where('status', 'pending')->count(),
+            'total'     => $bookings->count(),
+            'pending'   => $bookings->where('status', 'pending')->count(),
             'confirmed' => $bookings->where('status', 'confirmed')->count(),
             'cancelled' => $bookings->where('status', 'cancelled')->count(),
         ];
@@ -23,33 +24,111 @@ class BookingController extends Controller
         return Inertia::render('Admin/Bookings/Index', compact('bookings', 'stats'));
     }
 
-    // Confirm booking
     public function confirm(Request $request, $reference_number)
     {
+        $request->validate([
+            'confirmed_date' => 'required|date',
+            'confirmed_time' => 'required',
+            'admin_response' => 'nullable|max:500',
+        ]);
+
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status' => 'confirmed',
+            'status'         => 'confirmed',
             'confirmed_date' => $request->confirmed_date,
             'confirmed_time' => $request->confirmed_time,
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')->with('success', 'Booking confirmed successfully!!');
+        // Send confirmation email to client
+        try {
+            Mail::raw(
+                "Dear {$booking->name},\n\n" .
+                "Great news! Your consultation booking with Jurukur Visi Sdn Bhd has been CONFIRMED.\n\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "APPOINTMENT DETAILS\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "Reference No : {$booking->reference_number}\n" .
+                "Service      : {$booking->service_type}\n" .
+                "Date         : {$request->confirmed_date}\n" .
+                "Time         : {$request->confirmed_time}\n" .
+                "Type         : {$booking->consultation_type}\n" .
+                ($request->admin_response ? "\nNote from our team:\n{$request->admin_response}\n" : '') .
+                "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" .
+                "Please arrive on time. If you need to reschedule, contact us as soon as possible.\n\n" .
+                "You can check your booking status anytime at our website using your reference number.\n\n" .
+                "Thank you for choosing Jurukur Visi Sdn Bhd.\n\n" .
+                "Best regards,\n" .
+                "Jurukur Visi Sdn Bhd\n" .
+                "Tel: +603 1234 5678\n" .
+                "Email: info@jurukurvisi.com\n" .
+                "Sungai Buloh, Selangor, Malaysia",
+                function ($message) use ($booking) {
+                    $message->to($booking->email, $booking->name)
+                        ->subject('✓ Booking Confirmed — Jurukur Visi Sdn Bhd');
+                }
+            );
+        } catch (\Exception $e) {
+            Log::error('Booking confirm email failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.bookings')
+            ->with('success', "Booking confirmed! Email notification sent to {$booking->email}.");
     }
 
     public function reschedule(Request $request, $reference_number)
     {
+        $request->validate([
+            'confirmed_date' => 'required|date',
+            'confirmed_time' => 'required',
+            'admin_response' => 'nullable|max:500',
+        ]);
+
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status' => 'rescheduled',
+            'status'         => 'rescheduled',
             'confirmed_date' => $request->confirmed_date,
             'confirmed_time' => $request->confirmed_time,
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')->with('success', 'Booking rescheduled successfully!!');
+        // Send reschedule email to client
+        try {
+            Mail::raw(
+                "Dear {$booking->name},\n\n" .
+                "Your consultation booking with Jurukur Visi Sdn Bhd has been RESCHEDULED.\n\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "UPDATED APPOINTMENT DETAILS\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "Reference No  : {$booking->reference_number}\n" .
+                "Service       : {$booking->service_type}\n" .
+                "New Date      : {$request->confirmed_date}\n" .
+                "New Time      : {$request->confirmed_time}\n" .
+                "Type          : {$booking->consultation_type}\n" .
+                ($request->admin_response ? "\nReason for rescheduling:\n{$request->admin_response}\n" : '') .
+                "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" .
+                "We apologise for any inconvenience caused. Please confirm your availability for the new date.\n\n" .
+                "If this new time does not suit you, please contact us immediately.\n\n" .
+                "You can check your booking status anytime at our website using your reference number.\n\n" .
+                "Thank you for your understanding.\n\n" .
+                "Best regards,\n" .
+                "Jurukur Visi Sdn Bhd\n" .
+                "Tel: +603 1234 5678\n" .
+                "Email: info@jurukurvisi.com\n" .
+                "Sungai Buloh, Selangor, Malaysia",
+                function ($message) use ($booking) {
+                    $message->to($booking->email, $booking->name)
+                        ->subject('📅 Booking Rescheduled — Jurukur Visi Sdn Bhd');
+                }
+            );
+        } catch (\Exception $e) {
+            Log::error('Booking reschedule email failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.bookings')
+            ->with('success', "Booking rescheduled! Email notification sent to {$booking->email}.");
     }
 
     public function cancel(Request $request, $reference_number)
@@ -57,16 +136,51 @@ class BookingController extends Controller
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status' => 'cancelled',
+            'status'         => 'cancelled',
             'admin_response' => $request->admin_response,
         ]);
 
-        return redirect()->route('admin.bookings')->with('success', 'Booking cancelled.');
+        // Send cancellation email to client
+        try {
+            Mail::raw(
+                "Dear {$booking->name},\n\n" .
+                "We regret to inform you that your consultation booking with Jurukur Visi Sdn Bhd has been CANCELLED.\n\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "CANCELLED BOOKING DETAILS\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "Reference No : {$booking->reference_number}\n" .
+                "Service      : {$booking->service_type}\n" .
+                "Preferred Date : {$booking->preferred_date}\n" .
+                "Preferred Time : {$booking->preferred_time}\n" .
+                ($request->admin_response ? "\nReason for cancellation:\n{$request->admin_response}\n" : '') .
+                "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" .
+                "We apologise for any inconvenience this may have caused.\n\n" .
+                "If you would like to make a new booking, please visit our website or contact us directly.\n\n" .
+                "Thank you for your understanding.\n\n" .
+                "Best regards,\n" .
+                "Jurukur Visi Sdn Bhd\n" .
+                "Tel: +603 1234 5678\n" .
+                "Email: info@jurukurvisi.com\n" .
+                "Sungai Buloh, Selangor, Malaysia",
+                function ($message) use ($booking) {
+                    $message->to($booking->email, $booking->name)
+                        ->subject('✕ Booking Cancelled — Jurukur Visi Sdn Bhd');
+                }
+            );
+        } catch (\Exception $e) {
+            Log::error('Booking cancel email failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.bookings')
+            ->with('success', "Booking cancelled. Email notification sent to {$booking->email}.");
     }
 
     public function destroy($reference_number)
     {
-        ConsultationBooking::where('reference_number', $reference_number)->firstOrFail()->delete();
-        return redirect()->route('admin.bookings')->with('success', 'Booking deleted.');
+        $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
+        $booking->delete();
+
+        return redirect()->route('admin.bookings')
+            ->with('success', 'Booking deleted successfully.');
     }
 }

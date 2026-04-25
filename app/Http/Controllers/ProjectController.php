@@ -21,7 +21,7 @@ class ProjectController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->take(5)
                 ->get(),
-            'pending_users' => \App\Models\User::where('is_active', false)->where('role', 'pic')->count(),
+            'total_users' => \App\Models\User::where('role', 'pic')->count(),
         ];
 
         return Inertia::render('Admin/Dashboard', compact('stats'));
