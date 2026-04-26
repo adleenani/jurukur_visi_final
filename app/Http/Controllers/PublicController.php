@@ -7,10 +7,13 @@ use App\Models\ConsultationBooking;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
+// Controller for public-facing pages (home, projects, contact, booking status)
 class PublicController extends Controller
 {
+    // Home page
     public function home()
     {
+        // Gather stats for home page
         $stats = [
             'projects' => Project::count(),
         ];
@@ -18,19 +21,24 @@ class PublicController extends Controller
         return Inertia::render('Home', compact('stats'));
     }
 
+    // Projects page
     public function projects()
     {
+        // Fetch all projects ordered by start date descending
         $projects = Project::orderBy('project_start', 'desc')->get();
         return Inertia::render('Projects', compact('projects'));
     }
 
+    // Contact page
     public function contact()
     {
         return Inertia::render('Contact');
     }
 
+    // Handle contact form submission (booking request)
     public function submitContact(Request $request)
     {
+        // Validate input
         $request->validate([
             'name' => 'required|string|min:2|max:100|regex:/^[a-zA-Z\s]+$/',
             'email' => 'required|email|max:100',
@@ -44,6 +52,7 @@ class PublicController extends Controller
 
         $referenceNumber = (string) \Illuminate\Support\Str::uuid();
 
+        // Create new booking with sanitized input and generated reference number
         ConsultationBooking::create([
             'reference_number' => $referenceNumber,
             'name' => strip_tags($request->name),
@@ -60,6 +69,7 @@ class PublicController extends Controller
         return back()->with('success', "Booking submitted! Your reference number is: {$referenceNumber} — save this to check your booking status.");
     }
 
+    // Booking status page
     public function bookingStatus()
     {
         return Inertia::render('BookingStatus', [
@@ -68,6 +78,7 @@ class PublicController extends Controller
         ]);
     }
 
+    // Check booking status via AJAX
     public function checkBookingStatus(Request $request)
     {
         $request->validate([
@@ -79,9 +90,9 @@ class PublicController extends Controller
             strip_tags($request->reference_number)
         )->first();
 
-        return Inertia::render('BookingStatus', [
+        return response()->json([
+            'found' => $booking !== null,
             'booking' => $booking,
-            'searched' => true,
         ]);
     }
 }

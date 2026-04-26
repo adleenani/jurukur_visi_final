@@ -39,7 +39,7 @@ const team = [
     {
         name: "Zainal Abidin Bin Kamaruddin",
         role: "Director & Licensed Surveyor",
-        exp: "25+ years experience",
+        exp: "19+ years experience",
     },
     {
         name: "Faizah Binti Abdul Wahab",
@@ -47,14 +47,14 @@ const team = [
         exp: "10+ years experience",
     },
     {
-        name: "Fatin Binti Nor Anuar",
-        role: "Administrative Officer",
-        exp: "8+ years experience",
-    },
-    {
         name: "Azharudin Bin Abu Hassan",
         role: "Project Manager",
-        exp: "6+ years experience",
+        exp: "12+ years experience",                                           
+    },
+    {
+        name: "Muhammad Fuad bin Yusof",
+        role: "Senior Surveyor",
+        exp: "11+ years experience",
     },
 ];
 

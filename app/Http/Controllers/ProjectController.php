@@ -6,12 +6,13 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-
+// Controller for managing projects (admin/PIC)
 class ProjectController extends Controller
 {
     // Dashboard
     public function dashboard()
     {
+        // Gather stats for dashboard
         $stats = [
             'total' => Project::count(),
             'recent' => Project::orderBy('created_at', 'desc')->take(5)->get(),
@@ -28,10 +29,29 @@ class ProjectController extends Controller
     }
 
     // Project list
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::orderBy('project_start', 'desc')->get();
-        return Inertia::render('Admin/Projects/Index', compact('projects'));
+        // Fetch projects with optional search filter and pagination
+        $query = Project::orderBy('created_at', 'desc');
+
+        // Apply search filter across multiple fields
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('project_name', 'like', "%{$request->search}%")
+                    ->orWhere('project_id', 'like', "%{$request->search}%")
+                    ->orWhere('project_location', 'like', "%{$request->search}%")
+                    ->orWhere('project_services', 'like', "%{$request->search}%");
+            });
+        }
+
+        // Paginate results and maintain query string for filters
+        $projects = $query->paginate(10)->withQueryString();
+
+        // Pass projects and current filters to the view
+        return Inertia::render('Admin/Projects/Index', [
+            'projects' => $projects,
+            'filters' => $request->only(['search']),
+        ]);
     }
 
     // Show create form
@@ -43,6 +63,7 @@ class ProjectController extends Controller
     // Store new project
     public function store(Request $request)
     {
+        // Validate input
         $request->validate([
             'project_id' => 'required|max:20|alpha_num|unique:projects,project_id',
             'project_name' => 'required|string|max:100',
@@ -64,6 +85,7 @@ class ProjectController extends Controller
             $duration .= $interval->m . ' Month(s), ';
         $duration .= $interval->d . ' Day(s)';
 
+        // Create project with created_by set to current user ID from session
         Project::create([
             'project_id' => strtoupper($request->project_id),
             'project_name' => $request->project_name,
@@ -83,6 +105,7 @@ class ProjectController extends Controller
     // Show edit form
     public function edit($project_id)
     {
+        // Find project by project_id (not ID) and pass to view
         $project = Project::where('project_id', $project_id)->firstOrFail();
         return Inertia::render('Admin/Projects/Edit', compact('project'));
     }
@@ -92,6 +115,7 @@ class ProjectController extends Controller
     {
         $project = Project::where('project_id', $project_id)->firstOrFail();
 
+        // Validate input
         $request->validate([
             'project_name' => 'required|max:100',
             'project_start' => 'required|date',
@@ -101,6 +125,7 @@ class ProjectController extends Controller
             'project_description' => 'nullable|max:500',
         ]);
 
+        // Calculate duration automatically
         $start = new \DateTime($request->project_start);
         $end = new \DateTime($request->project_end);
         $interval = $start->diff($end);

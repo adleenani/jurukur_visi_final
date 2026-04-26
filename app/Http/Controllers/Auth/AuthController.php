@@ -11,20 +11,26 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Inertia;
 
+// Controller for handling authentication (login, 2FA, password change)
 class AuthController extends Controller
 {
+
+    // Show login form
     public function showLogin()
     {
         return Inertia::render('Auth/Login');
     }
 
+    // Show signup form
     public function showSignup()
     {
         return Inertia::render('Auth/Signup');
     }
 
+    // Handle signup form submission
     public function signup(Request $request)
     {
+        // Validate input with strong rules and custom messages
         $validated = $request->validate([
             'username' => 'required|min:4|max:30|alpha_num|unique:users,username',
             'full_name' => 'required|string|max:100',
@@ -37,6 +43,7 @@ class AuthController extends Controller
             ],
         ]);
 
+        // Create new user with hashed password and default role 'pic', but set is_active to false until admin approval
         User::create([
             'username' => $validated['username'],
             'full_name' => $validated['full_name'],
@@ -46,12 +53,15 @@ class AuthController extends Controller
             'is_active' => false,
         ]);
 
+        // Redirect to login with message about account creation and pending approval
         return redirect()->route('login')
             ->with('message', 'Account created! Wait for admin approval before logging in.');
     }
 
+    // Handle login form submission
     public function login(Request $request)
     {
+        // Validate input with strong rules
         $request->validate([
             'username' => 'required',
             'password' => 'required',
@@ -67,6 +77,7 @@ class AuthController extends Controller
             ]);
         }
 
+        // Find user by username
         $user = User::where('username', $request->username)->first();
 
         // Check credentials
@@ -101,6 +112,7 @@ class AuthController extends Controller
                 }
             );
         } catch (\Exception $e) {
+            // Log the error and show a generic message to the user
             Log::error('2FA email failed: ' . $e->getMessage());
             return back()->withErrors(['username' => 'Failed to send verification email. Please try again.']);
         }
@@ -111,13 +123,17 @@ class AuthController extends Controller
             '2fa_expires' => now()->addMinutes(10)->timestamp,
         ]);
 
+        // Clear login attempts on successful password verification
         RateLimiter::clear($key);
 
+        // Redirect to 2FA verification page
         return redirect()->route('2fa.show');
     }
 
+    // Show 2FA verification form
     public function show2FA()
     {
+        // Must have temp 2FA session to access this page
         if (!session('2fa_user_id')) {
             return redirect()->route('login');
         }
@@ -129,18 +145,23 @@ class AuthController extends Controller
                 ->withErrors(['username' => 'Session expired. Please login again.']);
         }
 
+        // Show 2FA form
         return Inertia::render('Auth/TwoFactor');
     }
 
+    // Handle 2FA verification
     public function verify2FA(Request $request)
     {
+        // Validate input
         $request->validate(['code' => 'required|digits:6']);
 
+        // Check temp 2FA session
         if (!session('2fa_user_id')) {
             return redirect()->route('login')
                 ->withErrors(['code' => 'Session expired. Please login again.']);
         }
 
+        // Check if 2FA session expired
         if (now()->timestamp > session('2fa_expires')) {
             session()->forget(['2fa_user_id', '2fa_expires']);
             return redirect()->route('login')
@@ -149,10 +170,12 @@ class AuthController extends Controller
 
         $user = User::find(session('2fa_user_id'));
 
+        // If user not found (shouldn't happen), redirect to login
         if (!$user) {
             return redirect()->route('login');
         }
 
+        // Verify OTP
         if (!Hash::check($request->code, $user->tfa_code)) {
             return back()->withErrors(['code' => 'Invalid verification code. Please try again.']);
         }
@@ -180,6 +203,7 @@ class AuthController extends Controller
             ->with('success', 'Welcome back, ' . $user->full_name . '!');
     }
 
+    // Show change password form (forced on first login)
     public function showChangePassword()
     {
         // Must be logged in
@@ -195,12 +219,15 @@ class AuthController extends Controller
         return Inertia::render('Auth/ChangePassword');
     }
 
+    // Handle change password form submission
     public function changePassword(Request $request)
     {
+        // Must be logged in
         if (!session('user_id')) {
             return redirect()->route('login');
         }
 
+        // Validate input
         $request->validate([
             'password' => [
                 'required',
@@ -224,6 +251,7 @@ class AuthController extends Controller
             ]);
         }
 
+        // Update password and set must_change_password to false
         $user->update([
             'password' => password_hash($request->password, PASSWORD_ARGON2ID),
             'must_change_password' => false,
@@ -236,6 +264,7 @@ class AuthController extends Controller
             ->with('success', 'Password changed successfully! Welcome to Jurukur Visi.');
     }
 
+    //  Handle logout
     public function logout()
     {
         session()->flush();

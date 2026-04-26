@@ -3,11 +3,31 @@ import { router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
 const statusStyle = {
-    pending: { bg: "#fef9c3", text: "#854d0e" },
-    confirmed: { bg: "#dcfce7", text: "#166534" },
-    rescheduled: { bg: "#dbeafe", text: "#1e40af" },
-    cancelled: { bg: "#fee2e2", text: "#991b1b" },
+    pending: { bg: "#fef9c3", color: "#854d0e" },
+    confirmed: { bg: "#d1fae5", color: "#065f46" },
+    rescheduled: { bg: "#dbeafe", color: "#1e40af" },
+    cancelled: { bg: "#fee2e2", color: "#991b1b" },
 };
+
+const avatarColors = [
+    { bg: "#fef9c3", color: "#854d0e" },
+    { bg: "#d1fae5", color: "#065f46" },
+    { bg: "#dbeafe", color: "#1e40af" },
+    { bg: "#fce7f3", color: "#9d174d" },
+    { bg: "#ede9fe", color: "#6d28d9" },
+];
+
+function getInitials(name) {
+    if (!name) return "?";
+    const parts = name.trim().split(" ");
+    return (
+        parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")
+    ).toUpperCase();
+}
+
+function getAvatarColor(name) {
+    return avatarColors[(name?.charCodeAt(0) ?? 0) % avatarColors.length];
+}
 
 const timeSlots = [
     "9:00 AM",
@@ -18,18 +38,39 @@ const timeSlots = [
     "4:00 PM",
 ];
 
-function getInitials(name) {
-    return name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
+function Pagination({ data }) {
+    if (data.last_page <= 1) return null;
+    return (
+        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+            <p className="text-xs text-gray-400">
+                Showing {data.from}–{data.to} of {data.total} records
+            </p>
+            <div className="flex gap-1.5">
+                {data.links.map((link, i) => (
+                    <button
+                        key={i}
+                        onClick={() => link.url && router.get(link.url)}
+                        disabled={!link.url}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+                        style={{
+                            background: link.active ? "#064e3b" : "white",
+                            color: link.active ? "white" : "#374151",
+                            border: "0.5px solid #e5e7eb",
+                            opacity: !link.url ? 0.4 : 1,
+                            cursor: !link.url ? "not-allowed" : "pointer",
+                        }}
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ))}
+            </div>
+        </div>
+    );
 }
 
-export default function Index({ bookings, stats }) {
+export default function Index({ bookings, stats, filters }) {
     const { flash } = usePage().props;
-    const [filter, setFilter] = useState("all");
+    const [search, setSearch] = useState(filters.search ?? "");
+    const [status, setStatus] = useState(filters.status ?? "all");
     const [modal, setModal] = useState(null);
     const [action, setAction] = useState("confirm");
     const [form, setForm] = useState({
@@ -39,10 +80,26 @@ export default function Index({ bookings, stats }) {
     });
     const [submitting, setSubmitting] = useState(false);
 
-    const filtered =
-        filter === "all"
-            ? bookings
-            : bookings.filter((b) => b.status === filter);
+    function applyFilters(newSearch, newStatus) {
+        router.get(
+            "/admin/bookings",
+            {
+                search: newSearch,
+                status: newStatus,
+            },
+            { preserveState: true, replace: true },
+        );
+    }
+
+    function handleSearch(e) {
+        setSearch(e.target.value);
+        applyFilters(e.target.value, status);
+    }
+
+    function handleStatus(s) {
+        setStatus(s);
+        applyFilters(search, s);
+    }
 
     function openModal(booking) {
         setModal(booking);
@@ -78,162 +135,327 @@ export default function Index({ bookings, stats }) {
 
     return (
         <AdminLayout>
-            <div className="mb-8">
-                <h1 className="text-2xl font-medium text-gray-800">
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">
                     Consultation Bookings
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
-                    Manage all client consultation requests.
+                <p className="text-sm text-gray-500 mt-1">
+                    All client consultation requests — search, filter and manage
+                    from here.
                 </p>
             </div>
 
-            {flash?.success && (
-                <div className="bg-green-50 text-green-700 px-4 py-3 rounded-lg mb-6 text-sm">
-                    {flash.success}
-                </div>
-            )}
-
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-4 gap-4 mb-6">
                 {[
-                    {
-                        label: "Total",
-                        value: stats.total,
-                        color: "text-gray-800",
-                    },
                     {
                         label: "Pending",
                         value: stats.pending,
-                        color: "text-yellow-700",
+                        color: "#d97706",
+                        bg: "#fffbeb",
                     },
                     {
                         label: "Confirmed",
                         value: stats.confirmed,
-                        color: "text-green-700",
+                        color: "#15803d",
+                        bg: "#f0fdf4",
+                    },
+                    {
+                        label: "Rescheduled",
+                        value: stats.rescheduled,
+                        color: "#1d4ed8",
+                        bg: "#dbeafe",
                     },
                     {
                         label: "Cancelled",
                         value: stats.cancelled,
-                        color: "text-red-600",
+                        color: "#dc2626",
+                        bg: "#fef2f2",
                     },
-                ].map(({ label, value, color }) => (
+                ].map(({ label, value, color, bg }) => (
                     <div
                         key={label}
-                        className="bg-white rounded-xl p-5 border border-gray-100 text-center"
+                        className="rounded-2xl p-4 border"
+                        style={{ background: bg, borderColor: "transparent" }}
                     >
-                        <p className={`text-3xl font-medium ${color}`}>
+                        <p className="text-3xl font-bold" style={{ color }}>
                             {value}
                         </p>
-                        <p className="text-gray-400 text-sm mt-1">{label}</p>
+                        <p className="text-xs text-gray-500 mt-1 font-semibold uppercase tracking-wide">
+                            {label}
+                        </p>
                     </div>
                 ))}
             </div>
 
-            {/* Filter tabs */}
-            <div className="flex gap-2 mb-6 flex-wrap">
-                {[
-                    "all",
-                    "pending",
-                    "confirmed",
-                    "rescheduled",
-                    "cancelled",
-                ].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setFilter(tab)}
-                        className={`px-4 py-1.5 rounded-full text-sm transition capitalize ${
-                            filter === tab
-                                ? "bg-green-700 text-white"
-                                : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-50"
-                        }`}
+            {/* Toolbar */}
+            <div className="flex items-center gap-3 mb-4">
+                <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1">
+                    {[
+                        "all",
+                        "pending",
+                        "confirmed",
+                        "rescheduled",
+                        "cancelled",
+                    ].map((s) => (
+                        <button
+                            key={s}
+                            onClick={() => handleStatus(s)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition"
+                            style={{
+                                background:
+                                    status === s ? "#064e3b" : "transparent",
+                                color: status === s ? "white" : "#6b7280",
+                            }}
+                        >
+                            {s}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
+                    <svg
+                        width="13"
+                        height="13"
+                        fill="none"
+                        stroke="#9ca3af"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
                     >
-                        {tab}
-                    </button>
-                ))}
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={handleSearch}
+                        placeholder="Search name, email, ref..."
+                        className="outline-none bg-transparent text-gray-700"
+                        style={{
+                            fontSize: "12px",
+                            fontFamily: "Raleway, sans-serif",
+                            width: "180px",
+                        }}
+                    />
+                </div>
             </div>
 
-            {/* Bookings list */}
-            {filtered.length === 0 ? (
-                <div className="bg-white rounded-xl border border-gray-100 px-6 py-16 text-center text-gray-400 text-sm">
-                    No bookings found.
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {filtered.map((booking) => {
-                        const style = statusStyle[booking.status] ?? {
-                            bg: "#f3f4f6",
-                            text: "#6b7280",
-                        };
-                        return (
-                            <div
-                                key={booking.id}
-                                className="bg-white rounded-xl border border-gray-100 px-6 py-4 flex items-center justify-between gap-4"
-                            >
-                                <div className="flex items-center gap-4 flex-1 min-w-0">
-                                    {/* Avatar */}
-                                    <div
-                                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
+            {/* Table */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <table className="w-full" style={{ tableLayout: "fixed" }}>
+                    <colgroup>
+                        <col style={{ width: "10%" }} />
+                        <col style={{ width: "23%" }} />
+                        <col style={{ width: "11%" }} />
+                        <col style={{ width: "11%" }} />
+                        <col style={{ width: "9%" }} />
+                        <col style={{ width: "9%" }} />
+                        <col style={{ width: "10%" }} />
+                        <col style={{ width: "10%" }} />
+                        <col style={{ width: "7%" }} />
+                    </colgroup>
+                    <thead>
+                        <tr
+                            style={{
+                                background: "#f9fafb",
+                                borderBottom: "0.5px solid #e5e7eb",
+                            }}
+                        >
+                            {[
+                                "Ref No",
+                                "Client",
+                                "Service",
+                                "Pref. Date",
+                                "Time",
+                                "Type",
+                                "Status",
+                                "Submitted",
+                                "Actions",
+                            ].map((h) => (
+                                <th
+                                    key={h}
+                                    className="px-4 py-3 text-left font-semibold text-gray-400"
+                                    style={{
+                                        fontSize: "11px",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.05em",
+                                    }}
+                                >
+                                    {h}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {bookings.data.length === 0 ? (
+                            <tr>
+                                <td
+                                    colSpan={9}
+                                    className="px-4 py-16 text-center text-gray-400 text-sm"
+                                >
+                                    No bookings found.
+                                </td>
+                            </tr>
+                        ) : (
+                            bookings.data.map((booking) => {
+                                const av = getAvatarColor(booking.name);
+                                const s =
+                                    statusStyle[booking.status] ??
+                                    statusStyle.pending;
+                                return (
+                                    <tr
+                                        key={booking.id}
                                         style={{
-                                            background: "#e0f2fe",
-                                            color: "#0369a1",
+                                            borderBottom: "0.5px solid #f3f4f6",
                                         }}
+                                        className="hover:bg-gray-50 transition"
                                     >
-                                        {getInitials(booking.name)}
-                                    </div>
-
-                                    {/* Name and Status */}
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <p className="font-medium text-gray-800 text-sm">
-                                                {booking.name}
-                                            </p>
+                                        <td
+                                            className="px-4 py-3"
+                                            style={{
+                                                fontSize: "9px",
+                                                fontFamily: "monospace",
+                                                color: "#9ca3af",
+                                            }}
+                                        >
+                                            {booking.reference_number.slice(
+                                                0,
+                                                8,
+                                            )}
+                                            ...
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-7 h-7 rounded-full flex items-center justify-center font-bold flex-shrink-0"
+                                                    style={{
+                                                        fontSize: "9px",
+                                                        background: av.bg,
+                                                        color: av.color,
+                                                    }}
+                                                >
+                                                    {getInitials(booking.name)}
+                                                </div>
+                                                <div>
+                                                    <p
+                                                        className="font-semibold text-gray-800 truncate"
+                                                        style={{
+                                                            fontSize: "12px",
+                                                        }}
+                                                    >
+                                                        {booking.name}
+                                                    </p>
+                                                    <p
+                                                        className="text-gray-400 truncate"
+                                                        style={{
+                                                            fontSize: "10px",
+                                                        }}
+                                                    >
+                                                        {booking.email}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td
+                                            className="px-4 py-3 text-gray-600 truncate"
+                                            style={{ fontSize: "11px" }}
+                                        >
+                                            {booking.service_type}
+                                        </td>
+                                        <td
+                                            className="px-4 py-3 text-gray-600"
+                                            style={{ fontSize: "11px" }}
+                                        >
+                                            {booking.preferred_date}
+                                        </td>
+                                        <td
+                                            className="px-4 py-3 text-gray-600"
+                                            style={{ fontSize: "11px" }}
+                                        >
+                                            {booking.preferred_time}
+                                        </td>
+                                        <td
+                                            className="px-4 py-3 text-gray-600 capitalize"
+                                            style={{ fontSize: "11px" }}
+                                        >
+                                            {booking.consultation_type}
+                                        </td>
+                                        <td className="px-4 py-3">
                                             <span
-                                                className="text-xs font-medium px-2 py-0.5 rounded-full capitalize"
+                                                className="font-bold capitalize"
                                                 style={{
-                                                    background: style.bg,
-                                                    color: style.text,
+                                                    fontSize: "10px",
+                                                    padding: "3px 8px",
+                                                    borderRadius: "99px",
+                                                    background: s.bg,
+                                                    color: s.color,
                                                 }}
                                             >
                                                 {booking.status}
                                             </span>
-                                        </div>
-                                        <p className="text-xs text-gray-400 mt-0.5 truncate">
-                                            {booking.service_type} ·{" "}
-                                            {booking.preferred_date} at{" "}
-                                            {booking.preferred_time}
-                                        </p>
-                                    </div>
-                                </div>
+                                        </td>
+                                        <td
+                                            className="px-4 py-3 text-gray-400"
+                                            style={{ fontSize: "10px" }}
+                                        >
+                                            {new Date(
+                                                booking.created_at,
+                                            ).toLocaleDateString("en-MY", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                            })}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex flex-col gap-1">
+                                                <button
+                                                    onClick={() =>
+                                                        openModal(booking)
+                                                    }
+                                                    className="font-bold transition"
+                                                    style={{
+                                                        fontSize: "10px",
+                                                        background: "#064e3b",
+                                                        color: "white",
+                                                        padding: "4px 8px",
+                                                        borderRadius: "99px",
+                                                        border: "none",
+                                                        cursor: "pointer",
+                                                    }}
+                                                >
+                                                    Manage
+                                                </button>
+                                                <button
+                                                    onClick={() =>
+                                                        deleteBooking(
+                                                            booking.reference_number,
+                                                        )
+                                                    }
+                                                    className="font-bold transition"
+                                                    style={{
+                                                        fontSize: "10px",
+                                                        background: "#fef2f2",
+                                                        color: "#dc2626",
+                                                        padding: "4px 8px",
+                                                        borderRadius: "99px",
+                                                        border: "0.5px solid #fecaca",
+                                                        cursor: "pointer",
+                                                    }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
+                </table>
+                <Pagination data={bookings} />
+            </div>
 
-                                {/* Action Buttons */}
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                    {/* Manage Button */}
-                                    <button
-                                        onClick={() => openModal(booking)}
-                                        className="px-3 py-1.5 bg-green-700 text-white rounded-lg text-xs hover:bg-green-800 transition"
-                                    >
-                                        Manage
-                                    </button>
-
-                                    {/* Delete Button */}
-                                    <button
-                                        onClick={() =>
-                                            deleteBooking(
-                                                booking.reference_number,
-                                            )
-                                        }
-                                        className="px-3 py-1.5 border border-gray-200 text-gray-400 rounded-lg text-xs hover:bg-gray-50 transition"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Split panel modal */}
+            {/* Split panel modal — same as before */}
             {modal && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -242,12 +464,10 @@ export default function Index({ bookings, stats }) {
                         if (e.target === e.currentTarget) closeModal();
                     }}
                 >
-                    {/* Modal Content */}
                     <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden border border-gray-100">
-                        {/* Modal header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                             <div>
-                                <p className="font-medium text-gray-800">
+                                <p className="font-bold text-gray-800">
                                     Booking request
                                 </p>
                                 <p className="text-xs text-gray-400 mt-0.5">
@@ -255,41 +475,40 @@ export default function Index({ bookings, stats }) {
                                 </p>
                             </div>
                             <span
-                                className="text-xs font-medium px-2.5 py-1 rounded-full capitalize"
+                                className="text-xs font-bold px-2.5 py-1 rounded-full capitalize"
                                 style={{
                                     background:
                                         statusStyle[modal.status]?.bg ??
                                         "#f3f4f6",
                                     color:
-                                        statusStyle[modal.status]?.text ??
+                                        statusStyle[modal.status]?.color ??
                                         "#6b7280",
                                 }}
                             >
                                 {modal.status}
                             </span>
                         </div>
-
-                        {/* Split body */}
                         <div className="grid grid-cols-2">
                             {/* Left — client info */}
                             <div className="px-5 py-4 border-r border-gray-100">
-                                <p className="text-xs font-medium uppercase tracking-wide text-gray-400 mb-3">
+                                <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">
                                     Client information
                                 </p>
-
-                                {/* Avatar + name */}
                                 <div className="flex items-center gap-3 mb-4">
                                     <div
-                                        className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
+                                        className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                                         style={{
-                                            background: "#e0f2fe",
-                                            color: "#0369a1",
+                                            background: getAvatarColor(
+                                                modal.name,
+                                            ).bg,
+                                            color: getAvatarColor(modal.name)
+                                                .color,
                                         }}
                                     >
                                         {getInitials(modal.name)}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-gray-800">
+                                        <p className="text-sm font-bold text-gray-800">
                                             {modal.name}
                                         </p>
                                         <p className="text-xs text-gray-400">
@@ -297,8 +516,6 @@ export default function Index({ bookings, stats }) {
                                         </p>
                                     </div>
                                 </div>
-
-                                {/* Details */}
                                 <div className="space-y-2">
                                     {[
                                         { label: "Phone", value: modal.phone },
@@ -330,7 +547,6 @@ export default function Index({ bookings, stats }) {
                                                 className="text-gray-700 font-medium"
                                                 style={{
                                                     wordBreak: "break-word",
-                                                    whiteSpace: "normal",
                                                 }}
                                             >
                                                 {value}
@@ -338,8 +554,6 @@ export default function Index({ bookings, stats }) {
                                         </div>
                                     ))}
                                 </div>
-
-                                {/* Message */}
                                 {modal.message && (
                                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                                         <p className="text-xs text-gray-400 mb-1">
@@ -350,40 +564,23 @@ export default function Index({ bookings, stats }) {
                                         </p>
                                     </div>
                                 )}
-
-                                {/* Previous admin response */}
-                                {modal.admin_response && (
-                                    <div className="mt-3 p-3 bg-green-50 rounded-lg">
-                                        <p className="text-xs text-gray-400 mb-1">
-                                            Previous note
-                                        </p>
-                                        <p className="text-xs text-green-700 leading-relaxed">
-                                            {modal.admin_response}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Confirmed schedule */}
                                 {modal.confirmed_date && (
                                     <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                                         <p className="text-xs text-gray-400 mb-1">
                                             Scheduled
                                         </p>
-                                        <p className="text-xs text-blue-700">
+                                        <p className="text-xs text-blue-700 font-bold">
                                             {modal.confirmed_date} at{" "}
                                             {modal.confirmed_time}
                                         </p>
                                     </div>
                                 )}
                             </div>
-
                             {/* Right — admin action */}
                             <div className="px-5 py-4">
-                                <p className="text-xs font-medium uppercase tracking-wide text-gray-400 mb-3">
+                                <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">
                                     Admin action
                                 </p>
-
-                                {/* Action toggle */}
                                 <div className="flex gap-1.5 mb-4">
                                     {[
                                         {
@@ -412,7 +609,7 @@ export default function Index({ bookings, stats }) {
                                                 flex: 1,
                                                 padding: "6px 4px",
                                                 fontSize: "11px",
-                                                fontWeight: 500,
+                                                fontWeight: 600,
                                                 borderRadius: "8px",
                                                 border:
                                                     action === key
@@ -434,8 +631,6 @@ export default function Index({ bookings, stats }) {
                                         </button>
                                     ))}
                                 </div>
-
-                                {/* Form fields */}
                                 <div className="space-y-3">
                                     {(action === "confirm" ||
                                         action === "reschedule") && (
@@ -487,7 +682,6 @@ export default function Index({ bookings, stats }) {
                                             </div>
                                         </>
                                     )}
-
                                     <div>
                                         <label className="block text-xs text-gray-500 mb-1">
                                             {action === "cancel"
@@ -509,7 +703,6 @@ export default function Index({ bookings, stats }) {
                                             placeholder="Add a note..."
                                         />
                                     </div>
-
                                     <button
                                         onClick={submitAction}
                                         disabled={submitting}
@@ -517,7 +710,7 @@ export default function Index({ bookings, stats }) {
                                             width: "100%",
                                             padding: "9px",
                                             fontSize: "12px",
-                                            fontWeight: 500,
+                                            fontWeight: 600,
                                             borderRadius: "8px",
                                             border: "none",
                                             cursor: submitting
@@ -545,8 +738,6 @@ export default function Index({ bookings, stats }) {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Modal footer */}
                         <div className="px-5 py-3 border-t border-gray-100 flex justify-end">
                             <button
                                 onClick={closeModal}

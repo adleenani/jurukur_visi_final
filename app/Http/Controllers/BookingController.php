@@ -8,22 +8,48 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
+// Controller for managing consultation bookings (admin/PIC)
 class BookingController extends Controller
 {
-    public function index()
+    // List all bookings with filters and pagination
+    public function index(Request $request)
     {
-        $bookings = ConsultationBooking::orderBy('created_at', 'desc')->get();
+        $query = ConsultationBooking::orderBy('created_at', 'desc');
+
+        // Apply filters
+        if ($request->status && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Apply search filter across multiple fields
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('email', 'like', "%{$request->search}%")
+                    ->orWhere('reference_number', 'like', "%{$request->search}%")
+                    ->orWhere('service_type', 'like', "%{$request->search}%");
+            });
+        }
+
+        $bookings = $query->paginate(10)->withQueryString();
 
         $stats = [
-            'total'     => $bookings->count(),
-            'pending'   => $bookings->where('status', 'pending')->count(),
-            'confirmed' => $bookings->where('status', 'confirmed')->count(),
-            'cancelled' => $bookings->where('status', 'cancelled')->count(),
+            'total' => ConsultationBooking::count(),
+            'pending' => ConsultationBooking::where('status', 'pending')->count(),
+            'confirmed' => ConsultationBooking::where('status', 'confirmed')->count(),
+            'rescheduled' => ConsultationBooking::where('status', 'rescheduled')->count(),
+            'cancelled' => ConsultationBooking::where('status', 'cancelled')->count(),
         ];
 
-        return Inertia::render('Admin/Bookings/Index', compact('bookings', 'stats'));
+        // Pass bookings, stats, and current filters to the view
+        return Inertia::render('Admin/Bookings/Index', [
+            'bookings' => $bookings,
+            'stats' => $stats,
+            'filters' => $request->only(['search', 'status']),
+        ]);
     }
 
+    // Confirm a booking
     public function confirm(Request $request, $reference_number)
     {
         $request->validate([
@@ -35,7 +61,7 @@ class BookingController extends Controller
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status'         => 'confirmed',
+            'status' => 'confirmed',
             'confirmed_date' => $request->confirmed_date,
             'confirmed_time' => $request->confirmed_time,
             'admin_response' => $request->admin_response,
@@ -61,9 +87,10 @@ class BookingController extends Controller
                 "Thank you for choosing Jurukur Visi Sdn Bhd.\n\n" .
                 "Best regards,\n" .
                 "Jurukur Visi Sdn Bhd\n" .
-                "Tel: +603 1234 5678\n" .
-                "Email: info@jurukurvisi.com\n" .
-                "Sungai Buloh, Selangor, Malaysia",
+                "Tel: +603-6038 8523\n" .
+                "Fax: +603-6038 8524\n" .
+                "Email: jvisi95@gmail.com \n" .
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
                 function ($message) use ($booking) {
                     $message->to($booking->email, $booking->name)
                         ->subject('✓ Booking Confirmed — Jurukur Visi Sdn Bhd');
@@ -77,6 +104,7 @@ class BookingController extends Controller
             ->with('success', "Booking confirmed! Email notification sent to {$booking->email}.");
     }
 
+    // Reschedule a booking
     public function reschedule(Request $request, $reference_number)
     {
         $request->validate([
@@ -88,7 +116,7 @@ class BookingController extends Controller
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status'         => 'rescheduled',
+            'status' => 'rescheduled',
             'confirmed_date' => $request->confirmed_date,
             'confirmed_time' => $request->confirmed_time,
             'admin_response' => $request->admin_response,
@@ -115,9 +143,10 @@ class BookingController extends Controller
                 "Thank you for your understanding.\n\n" .
                 "Best regards,\n" .
                 "Jurukur Visi Sdn Bhd\n" .
-                "Tel: +603 1234 5678\n" .
-                "Email: info@jurukurvisi.com\n" .
-                "Sungai Buloh, Selangor, Malaysia",
+                "Tel: +603-6038 8523\n" .
+                "Fax: +603-6038 8524\n" .
+                "Email: jvisi95@gmail.com \n" .
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
                 function ($message) use ($booking) {
                     $message->to($booking->email, $booking->name)
                         ->subject('📅 Booking Rescheduled — Jurukur Visi Sdn Bhd');
@@ -131,12 +160,13 @@ class BookingController extends Controller
             ->with('success', "Booking rescheduled! Email notification sent to {$booking->email}.");
     }
 
+    // Cancel a booking
     public function cancel(Request $request, $reference_number)
     {
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();
 
         $booking->update([
-            'status'         => 'cancelled',
+            'status' => 'cancelled',
             'admin_response' => $request->admin_response,
         ]);
 
@@ -159,9 +189,10 @@ class BookingController extends Controller
                 "Thank you for your understanding.\n\n" .
                 "Best regards,\n" .
                 "Jurukur Visi Sdn Bhd\n" .
-                "Tel: +603 1234 5678\n" .
-                "Email: info@jurukurvisi.com\n" .
-                "Sungai Buloh, Selangor, Malaysia",
+                "Tel: +603-6038 8523\n" .
+                "Fax: +603-6038 8524\n" .
+                "Email: jvisi95@gmail.com \n" .
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
                 function ($message) use ($booking) {
                     $message->to($booking->email, $booking->name)
                         ->subject('✕ Booking Cancelled — Jurukur Visi Sdn Bhd');
@@ -175,6 +206,7 @@ class BookingController extends Controller
             ->with('success', "Booking cancelled. Email notification sent to {$booking->email}.");
     }
 
+    // Delete a booking
     public function destroy($reference_number)
     {
         $booking = ConsultationBooking::where('reference_number', $reference_number)->firstOrFail();

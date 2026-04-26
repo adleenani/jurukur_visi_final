@@ -8,8 +8,7 @@ export default function Navbar() {
         { label: "Home", href: "/" },
         { label: "About", href: "/about" },
         { label: "Projects", href: "/projects" },
-        { label: "Book a Consultation", href: "/book-a-consultation" },
-        { label: "Check Booking", href: "/booking-status" },
+        { label: "Book a Consultation", href: "/contact" },
     ];
 
     return (

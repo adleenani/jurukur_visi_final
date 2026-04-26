@@ -1,5 +1,6 @@
 import AdminLayout from "../../../Layouts/AdminLayout";
 import { Link, router, usePage } from "@inertiajs/react";
+import { useState } from "react";
 
 function getInitials(name) {
     if (!name) return "?";
@@ -9,8 +10,31 @@ function getInitials(name) {
     ).toUpperCase();
 }
 
-export default function Index({ users, stats }) {
+export default function Index({ users, stats, filters }) {
     const { flash } = usePage().props;
+    const [search, setSearch] = useState(filters?.search ?? "");
+    const [status, setStatus] = useState(filters?.status ?? "all");
+
+    function applyFilters(newSearch, newStatus) {
+        router.get(
+            "/admin/users",
+            {
+                search: newSearch,
+                status: newStatus,
+            },
+            { preserveState: true, replace: true },
+        );
+    }
+
+    function handleSearch(e) {
+        setSearch(e.target.value);
+        applyFilters(e.target.value, status);
+    }
+
+    function handleStatus(s) {
+        setStatus(s);
+        applyFilters(search, s);
+    }
 
     function approve(id, name) {
         if (confirm(`Activate account for ${name}?`)) {
@@ -34,6 +58,8 @@ export default function Index({ users, stats }) {
         }
     }
 
+    const userData = users?.data ?? [];
+
     return (
         <AdminLayout>
             {/* Header */}
@@ -43,7 +69,8 @@ export default function Index({ users, stats }) {
                         Staff Account Management
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        Manage all PIC staff accounts.
+                        All PIC staff accounts — search, filter and manage from
+                        here.
                     </p>
                 </div>
                 <Link
@@ -55,6 +82,7 @@ export default function Index({ users, stats }) {
                 </Link>
             </div>
 
+            {/* Flash */}
             {flash?.success && (
                 <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl mb-5 text-sm font-medium">
                     {flash.success}
@@ -66,39 +94,81 @@ export default function Index({ users, stats }) {
                 {[
                     {
                         label: "Total Staff",
-                        value: stats.total,
+                        value: stats?.total ?? 0,
                         color: "#1d4ed8",
                         bg: "#eff6ff",
                     },
                     {
                         label: "Active",
-                        value: stats.active,
+                        value: stats?.active ?? 0,
                         color: "#15803d",
                         bg: "#f0fdf4",
                     },
                     {
                         label: "Inactive",
-                        value: stats.inactive,
+                        value: stats?.inactive ?? 0,
                         color: "#dc2626",
                         bg: "#fef2f2",
                     },
                 ].map(({ label, value, color, bg }) => (
                     <div
                         key={label}
-                        className="rounded-2xl p-5 border"
+                        className="rounded-2xl p-4 border"
                         style={{ background: bg, borderColor: "transparent" }}
                     >
-                        <p className="text-sm font-medium text-gray-500">
-                            {label}
-                        </p>
-                        <p
-                            className="text-4xl font-bold mt-1"
-                            style={{ color }}
-                        >
+                        <p className="text-3xl font-bold" style={{ color }}>
                             {value}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1 font-semibold uppercase tracking-wide">
+                            {label}
                         </p>
                     </div>
                 ))}
+            </div>
+
+            {/* Toolbar */}
+            <div className="flex items-center gap-3 mb-4">
+                <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1">
+                    {["all", "active", "inactive"].map((s) => (
+                        <button
+                            key={s}
+                            onClick={() => handleStatus(s)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition"
+                            style={{
+                                background:
+                                    status === s ? "#064e3b" : "transparent",
+                                color: status === s ? "white" : "#6b7280",
+                            }}
+                        >
+                            {s}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
+                    <svg
+                        width="13"
+                        height="13"
+                        fill="none"
+                        stroke="#9ca3af"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={handleSearch}
+                        placeholder="Search name, username, email..."
+                        className="outline-none bg-transparent text-gray-700"
+                        style={{
+                            fontSize: "12px",
+                            fontFamily: "Raleway, sans-serif",
+                            width: "180px",
+                        }}
+                    />
+                </div>
             </div>
 
             {/* Table */}
@@ -107,10 +177,11 @@ export default function Index({ users, stats }) {
                     <colgroup>
                         <col style={{ width: "22%" }} />
                         <col style={{ width: "15%" }} />
-                        <col style={{ width: "25%" }} />
-                        <col style={{ width: "15%" }} />
+                        <col style={{ width: "23%" }} />
                         <col style={{ width: "13%" }} />
                         <col style={{ width: "10%" }} />
+                        <col style={{ width: "10%" }} />
+                        <col style={{ width: "7%" }} />
                     </colgroup>
                     <thead>
                         <tr
@@ -120,17 +191,22 @@ export default function Index({ users, stats }) {
                             }}
                         >
                             {[
-                                "Staff",
+                                "Name",
                                 "Username",
                                 "Email",
                                 "Created",
                                 "Status",
+                                "Password",
                                 "Actions",
                             ].map((h) => (
                                 <th
                                     key={h}
-                                    className="px-5 py-3 text-left font-semibold text-gray-500"
-                                    style={{ fontSize: "13px" }}
+                                    className="px-4 py-3 text-left font-semibold text-gray-400"
+                                    style={{
+                                        fontSize: "11px",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.05em",
+                                    }}
                                 >
                                     {h}
                                 </th>
@@ -138,23 +214,17 @@ export default function Index({ users, stats }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.length === 0 ? (
+                        {userData.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={6}
-                                    className="px-5 py-16 text-center text-gray-400 text-sm"
+                                    colSpan={7}
+                                    className="px-4 py-16 text-center text-gray-400 text-sm"
                                 >
-                                    No staff accounts yet.{" "}
-                                    <Link
-                                        href="/admin/users/create"
-                                        className="text-green-700 hover:underline"
-                                    >
-                                        Create one!
-                                    </Link>
+                                    No staff accounts found.
                                 </td>
                             </tr>
                         ) : (
-                            users.map((user) => (
+                            userData.map((user) => (
                                 <tr
                                     key={user.id}
                                     style={{
@@ -162,13 +232,13 @@ export default function Index({ users, stats }) {
                                     }}
                                     className="hover:bg-gray-50 transition"
                                 >
-                                    {/* Name */}
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-3">
+                                    {/* Name + Avatar */}
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-2">
                                             <div
-                                                className="w-9 h-9 rounded-full flex items-center justify-center font-bold flex-shrink-0"
+                                                className="w-7 h-7 rounded-full flex items-center justify-center font-bold flex-shrink-0"
                                                 style={{
-                                                    fontSize: "12px",
+                                                    fontSize: "10px",
                                                     background: user.is_active
                                                         ? "#d1fae5"
                                                         : "#fee2e2",
@@ -180,8 +250,8 @@ export default function Index({ users, stats }) {
                                                 {getInitials(user.full_name)}
                                             </div>
                                             <span
-                                                className="font-semibold text-gray-800"
-                                                style={{ fontSize: "13px" }}
+                                                className="font-semibold text-gray-800 truncate"
+                                                style={{ fontSize: "12px" }}
                                             >
                                                 {user.full_name ??
                                                     user.username}
@@ -191,24 +261,24 @@ export default function Index({ users, stats }) {
 
                                     {/* Username */}
                                     <td
-                                        className="px-5 py-4 text-gray-500"
-                                        style={{ fontSize: "13px" }}
+                                        className="px-4 py-3 text-gray-500"
+                                        style={{ fontSize: "12px" }}
                                     >
                                         @{user.username}
                                     </td>
 
                                     {/* Email */}
                                     <td
-                                        className="px-5 py-4 text-gray-500"
-                                        style={{ fontSize: "13px" }}
+                                        className="px-4 py-3 text-gray-500 truncate"
+                                        style={{ fontSize: "12px" }}
                                     >
                                         {user.email}
                                     </td>
 
                                     {/* Created */}
                                     <td
-                                        className="px-5 py-4 text-gray-500"
-                                        style={{ fontSize: "13px" }}
+                                        className="px-4 py-3 text-gray-400"
+                                        style={{ fontSize: "11px" }}
                                     >
                                         {new Date(
                                             user.created_at,
@@ -220,12 +290,12 @@ export default function Index({ users, stats }) {
                                     </td>
 
                                     {/* Status */}
-                                    <td className="px-5 py-4">
+                                    <td className="px-4 py-3">
                                         <span
                                             className="font-bold"
                                             style={{
-                                                fontSize: "11px",
-                                                padding: "4px 10px",
+                                                fontSize: "10px",
+                                                padding: "3px 8px",
                                                 borderRadius: "99px",
                                                 background: user.is_active
                                                     ? "#d1fae5"
@@ -241,26 +311,50 @@ export default function Index({ users, stats }) {
                                         </span>
                                     </td>
 
+                                    {/* Password status */}
+                                    <td className="px-4 py-3">
+                                        <span
+                                            className="font-bold"
+                                            style={{
+                                                fontSize: "10px",
+                                                padding: "3px 8px",
+                                                borderRadius: "99px",
+                                                background:
+                                                    user.must_change_password
+                                                        ? "#fef9c3"
+                                                        : "#d1fae5",
+                                                color: user.must_change_password
+                                                    ? "#854d0e"
+                                                    : "#065f46",
+                                            }}
+                                        >
+                                            {user.must_change_password
+                                                ? "Temp"
+                                                : "Set"}
+                                        </span>
+                                    </td>
+
                                     {/* Actions */}
-                                    <td className="px-5 py-4">
-                                        <div className="flex flex-col gap-1.5">
+                                    <td className="px-4 py-3">
+                                        <div className="flex flex-col gap-1">
                                             {user.is_active ? (
                                                 <button
                                                     onClick={() =>
                                                         reject(
                                                             user.id,
-                                                            user.full_name,
+                                                            user.full_name ??
+                                                                user.username,
                                                         )
                                                     }
-                                                    className="font-semibold transition"
                                                     style={{
-                                                        fontSize: "12px",
+                                                        fontSize: "10px",
                                                         background: "#fef2f2",
                                                         color: "#dc2626",
-                                                        padding: "4px 10px",
+                                                        padding: "3px 8px",
                                                         borderRadius: "99px",
                                                         border: "0.5px solid #fecaca",
                                                         cursor: "pointer",
+                                                        fontWeight: 600,
                                                     }}
                                                 >
                                                     Deactivate
@@ -270,18 +364,19 @@ export default function Index({ users, stats }) {
                                                     onClick={() =>
                                                         approve(
                                                             user.id,
-                                                            user.full_name,
+                                                            user.full_name ??
+                                                                user.username,
                                                         )
                                                     }
-                                                    className="font-semibold transition"
                                                     style={{
-                                                        fontSize: "12px",
+                                                        fontSize: "10px",
                                                         background: "#d1fae5",
                                                         color: "#065f46",
-                                                        padding: "4px 10px",
+                                                        padding: "3px 8px",
                                                         borderRadius: "99px",
                                                         border: "0.5px solid #6ee7b7",
                                                         cursor: "pointer",
+                                                        fontWeight: 600,
                                                     }}
                                                 >
                                                     Activate
@@ -291,18 +386,19 @@ export default function Index({ users, stats }) {
                                                 onClick={() =>
                                                     deleteUser(
                                                         user.id,
-                                                        user.full_name,
+                                                        user.full_name ??
+                                                            user.username,
                                                     )
                                                 }
-                                                className="font-semibold transition"
                                                 style={{
-                                                    fontSize: "12px",
+                                                    fontSize: "10px",
                                                     background: "#fef2f2",
                                                     color: "#dc2626",
-                                                    padding: "4px 10px",
+                                                    padding: "3px 8px",
                                                     borderRadius: "99px",
                                                     border: "0.5px solid #fecaca",
                                                     cursor: "pointer",
+                                                    fontWeight: 600,
                                                 }}
                                             >
                                                 Delete
@@ -314,6 +410,44 @@ export default function Index({ users, stats }) {
                         )}
                     </tbody>
                 </table>
+
+                {/* Pagination */}
+                {users?.last_page > 1 && (
+                    <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+                        <p className="text-xs text-gray-400">
+                            Showing {users.from}–{users.to} of {users.total}{" "}
+                            records
+                        </p>
+                        <div className="flex gap-1.5">
+                            {users.links.map((link, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() =>
+                                        link.url && router.get(link.url)
+                                    }
+                                    disabled={!link.url}
+                                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+                                    style={{
+                                        background: link.active
+                                            ? "#064e3b"
+                                            : "white",
+                                        color: link.active
+                                            ? "white"
+                                            : "#374151",
+                                        border: "0.5px solid #e5e7eb",
+                                        opacity: !link.url ? 0.4 : 1,
+                                        cursor: !link.url
+                                            ? "not-allowed"
+                                            : "pointer",
+                                    }}
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );
