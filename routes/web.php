@@ -10,6 +10,7 @@ use Inertia\Inertia;
 
 // Public routes
 Route::get('/', [PublicController::class, 'home'])->name('home');
+Route::get('/about', [PublicController::class, 'about'])->name('about');
 Route::get('/projects', [PublicController::class, 'projects'])->name('projects');
 Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
 Route::post('/contact', [PublicController::class, 'submitContact'])->name('contact.submit');

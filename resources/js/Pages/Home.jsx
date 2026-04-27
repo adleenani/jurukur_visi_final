@@ -2,71 +2,17 @@ import PublicLayout from "../Layouts/PublicLayout";
 import { Link } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
 
+// Services data
 const services = [
-    {
-        title: "Cadastral Survey",
-        desc: "Precise boundary surveys for land ownership and title registration.",
-        icon: "📐",
-    },
-    {
-        title: "Topographic Mapping",
-        desc: "Detailed mapping of terrain features for planning and development.",
-        icon: "🗺️",
-    },
-    {
-        title: "Engineering Survey",
-        desc: "Construction and infrastructure surveys for engineering projects.",
-        icon: "🏗️",
-    },
-    {
-        title: "Strata Title",
-        desc: "Strata title surveys for multi-storey buildings and developments.",
-        icon: "🏢",
-    },
-    {
-        title: "GPS Survey",
-        desc: "High-precision GPS positioning for large-scale mapping projects.",
-        icon: "📡",
-    },
-    {
-        title: "Underground Utilities",
-        desc: "Detection and mapping of underground utility networks.",
-        icon: "⚙️",
-    },
+    { icon: "📐", title: "Cadastral Survey" },
+    { icon: "🗺️", title: "Topographic Mapping" },
+    { icon: "🏗️", title: "Engineering Survey" },
+    { icon: "🏢", title: "Strata Title" },
+    { icon: "📡", title: "GPS Survey" },
+    { icon: "⚙️", title: "Underground Utilities" },
 ];
 
-const team = [
-    {
-        name: "Zainal Abidin Bin Kamaruddin",
-        role: "Director & Licensed Surveyor",
-        exp: "19+ years experience",
-    },
-    {
-        name: "Faizah Binti Abdul Wahab",
-        role: "Account & Finance Manager",
-        exp: "10+ years experience",
-    },
-    {
-        name: "Azharudin Bin Abu Hassan",
-        role: "Project Manager",
-        exp: "12+ years experience",                                           
-    },
-    {
-        name: "Muhammad Fuad bin Yusof",
-        role: "Senior Surveyor",
-        exp: "11+ years experience",
-    },
-];
-
-const skills = [
-    { label: "Cadastral Surveying", value: 95 },
-    { label: "Topographic Mapping", value: 90 },
-    { label: "GIS & Geospatial", value: 85 },
-    { label: "Engineering Survey", value: 88 },
-    { label: "GPS Technology", value: 92 },
-    { label: "AutoCAD / Civil 3D", value: 80 },
-];
-
+// Work gallery images (without extension)
 const workImages = [
     "visi1",
     "visi2",
@@ -78,7 +24,7 @@ const workImages = [
     "visi9",
 ];
 
-// Lightbox component
+// Lightbox component for viewing images in full size
 function Lightbox({ src, onClose }) {
     useEffect(() => {
         const handler = (e) => {
@@ -104,11 +50,7 @@ function Lightbox({ src, onClose }) {
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                style={{
-                    position: "relative",
-                    maxWidth: "90vw",
-                    maxHeight: "90vh",
-                }}
+                style={{ position: "relative" }}
             >
                 <img
                     src={src}
@@ -135,9 +77,6 @@ function Lightbox({ src, onClose }) {
                         fontSize: "14px",
                         fontWeight: 700,
                         color: "#111",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
                     }}
                 >
                     ✕
@@ -147,7 +86,7 @@ function Lightbox({ src, onClose }) {
     );
 }
 
-// Animated counter
+// Counter component that animates counting up when it comes into view
 function Counter({ target, suffix = "" }) {
     const [count, setCount] = useState(0);
     const ref = useRef(null);
@@ -180,46 +119,59 @@ function Counter({ target, suffix = "" }) {
     );
 }
 
-// Skill bar
-function SkillBar({ label, value }) {
-    const [width, setWidth] = useState(0);
-    const ref = useRef(null);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => setWidth(value), 200);
-            }
-        });
-        if (ref.current) observer.observe(ref.current);
-        return () => observer.disconnect();
-    }, [value]);
-
-    return (
-        <div ref={ref} className="mb-5">
-            <div className="flex justify-between mb-1.5">
-                <span className="text-sm font-medium text-gray-700">
-                    {label}
-                </span>
-                <span className="text-sm text-green-700 font-medium">
-                    {value}%
-                </span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                    style={{
-                        width: `${width}%`,
-                        transition: "width 1.2s ease-in-out",
-                    }}
-                    className="h-full bg-green-600 rounded-full"
-                />
-            </div>
-        </div>
-    );
-}
-
+// Main Home component
 export default function Home({ stats }) {
     const [lightbox, setLightbox] = useState(null);
+
+    // Load Leaflet map after component mounts
+    useEffect(() => {
+        let map = null;
+
+        const loadMap = () => {
+            const el = document.getElementById("home-map");
+            if (!el || el._leaflet_id) return;
+
+            if (typeof window.L !== "undefined") {
+                initLeaflet();
+            } else {
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+                document.head.appendChild(link);
+
+                const script = document.createElement("script");
+                script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+                script.onload = initLeaflet;
+                document.head.appendChild(script);
+            }
+        };
+
+        // Initialize Leaflet map
+        function initLeaflet() {
+            const el = document.getElementById("home-map");
+            if (!el || el._leaflet_id) return;
+            map = window.L.map("home-map").setView([3.1985, 101.5119], 16);
+            window.L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    attribution: "© OpenStreetMap contributors",
+                },
+            ).addTo(map);
+            window.L.marker([3.1985, 101.5119])
+                .addTo(map)
+                .bindPopup(
+                    "<b>Jurukur Visi Sdn Bhd</b><br>6F2P+98 Sungai Buloh, Selangor",
+                )
+                .openPopup();
+        }
+
+        const timer = setTimeout(loadMap, 800);
+
+        return () => {
+            clearTimeout(timer);
+            if (map) map.remove();
+        };
+    }, []);
 
     return (
         <PublicLayout>
@@ -228,14 +180,14 @@ export default function Home({ stats }) {
                 className="relative min-h-screen flex items-center justify-center text-white"
                 style={{
                     backgroundImage:
-                        "linear-gradient(rgba(6, 78, 59, 0.82), rgba(4, 120, 87, 0.82)), url(/images/back_img.png)",
+                        "linear-gradient(rgba(6,78,59,0.82), rgba(4,120,87,0.82)), url(/images/back_img.png)",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     overflow: "hidden",
                 }}
             >
-                <div className="max-w-5xl mx-auto px-6 text-center relative z-10 py-32">
+                <div className="max-w-5xl mx-auto px-6 text-center relative z-10 py-20">
                     <div className="inline-block bg-green-800 bg-opacity-60 text-green-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6 tracking-wide uppercase">
                         Bumiputera Surveying Consultancy · Est. 2005
                     </div>
@@ -266,7 +218,7 @@ export default function Home({ stats }) {
                         </Link>
                     </div>
 
-                    {/* Quick stats under hero */}
+                    {/* Quick stats */}
                     <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg mx-auto">
                         {[
                             {
@@ -298,148 +250,55 @@ export default function Home({ stats }) {
                 </div>
             </section>
 
-            {/* ── 2. PROMO / ABOUT ── */}
-            <section className="py-24 px-6 bg-white">
-                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <span className="text-green-600 text-sm font-semibold uppercase tracking-widest">
-                            Who We Are
-                        </span>
-                        <h2 className="text-4xl font-bold text-gray-900 mt-3 mb-6 leading-tight">
-                            Malaysia's Trusted
-                            <br />
-                            Surveying Partner
-                        </h2>
-                        <p className="text-gray-500 leading-relaxed mb-5">
-                            Based in Sungai Buloh, Selangor, Jurukur Visi Sdn
-                            Bhd is a licensed Bumiputera-owned consulting firm
-                            specialising in advanced mapping and surveying
-                            solutions.
-                        </p>
-                        <p className="text-gray-500 leading-relaxed mb-8">
-                            We support infrastructure development, land
-                            management and geospatial projects across all states
-                            in Malaysia, delivering precision and
-                            professionalism on every engagement.
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                            {[
-                                { label: "Licensed by JUPEM", icon: "✓" },
-                                { label: "Bumiputera Certified", icon: "✓" },
-                                { label: "ISO Compliant", icon: "✓" },
-                                { label: "Nationwide Coverage", icon: "✓" },
-                            ].map(({ label, icon }) => (
-                                <div
-                                    key={label}
-                                    className="flex items-center gap-2 text-sm text-gray-600"
-                                >
-                                    <span className="w-5 h-5 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                                        {icon}
-                                    </span>
-                                    {label}
-                                </div>
-                            ))}
-                        </div>
-                        <Link
-                            href="/contact"
-                            className="inline-block mt-8 bg-green-700 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-green-800 transition"
-                        >
-                            Get In Touch →
-                        </Link>
-                    </div>
-
-                    {/* Right side image grid */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <img
-                            src="/images/visi1.jpg"
-                            alt="Survey work"
-                            className="rounded-2xl object-cover w-full h-48 hover:scale-105 transition duration-300 cursor-pointer"
-                            onClick={() => setLightbox("/images/visi1.jpg")}
-                            onError={(e) => {
-                                e.target.style.background = "#e8f5e1";
-                                e.target.style.minHeight = "192px";
-                            }}
-                        />
-                        <img
-                            src="/images/visi2.jpg"
-                            alt="Survey work"
-                            className="rounded-2xl object-cover w-full h-48 mt-6 hover:scale-105 transition duration-300 cursor-pointer"
-                            onClick={() => setLightbox("/images/visi2.jpg")}
-                            onError={(e) => {
-                                e.target.style.background = "#e8f5e1";
-                                e.target.style.minHeight = "192px";
-                            }}
-                        />
-                        <img
-                            src="/images/visi3.jpg"
-                            alt="Survey work"
-                            className="rounded-2xl object-cover w-full h-48 hover:scale-105 transition duration-300 cursor-pointer"
-                            onClick={() => setLightbox("/images/visi3.jpg")}
-                            onError={(e) => {
-                                e.target.style.background = "#e8f5e1";
-                                e.target.style.minHeight = "192px";
-                            }}
-                        />
-                        <img
-                            src="/images/visi4.jpg"
-                            alt="Survey work"
-                            className="rounded-2xl object-cover w-full h-48 mt-6 hover:scale-105 transition duration-300 cursor-pointer"
-                            onClick={() => setLightbox("/images/visi4.jpg")}
-                            onError={(e) => {
-                                e.target.style.background = "#e8f5e1";
-                                e.target.style.minHeight = "192px";
-                            }}
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* ── 3. SERVICES ── */}
-            <section className="py-24 px-6 bg-gray-50">
+            {/* ── 2. SERVICES (simplified) ── */}
+            <section className="py-20 px-6 bg-gray-50">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-14">
+                    <div className="text-center mb-12">
                         <span className="text-green-600 text-sm font-semibold uppercase tracking-widest">
                             What We Do
                         </span>
-                        <h2 className="text-4xl font-bold text-gray-900 mt-3">
+                        <h2 className="text-3xl font-bold text-gray-900 mt-3">
                             Our Services
                         </h2>
-                        <p className="text-gray-500 mt-4 max-w-xl mx-auto">
-                            Comprehensive surveying and mapping solutions
-                            tailored to your project needs.
-                        </p>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {services.map(({ title, desc, icon }) => (
+                    <div className="grid md:grid-cols-3 gap-5">
+                        {services.map(({ icon, title }) => (
                             <div
                                 key={title}
-                                className="bg-white rounded-2xl p-7 border border-gray-100 hover:border-green-200 hover:shadow-md transition duration-300 group"
+                                className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-green-200 hover:shadow-md transition duration-300 flex items-center gap-4"
                             >
-                                <div className="text-3xl mb-4">{icon}</div>
-                                <h3 className="font-bold text-gray-800 mb-2 group-hover:text-green-700 transition">
+                                <span className="text-3xl flex-shrink-0">
+                                    {icon}
+                                </span>
+                                <h3 className="font-bold text-gray-800">
                                     {title}
                                 </h3>
-                                <p className="text-gray-500 text-sm leading-relaxed">
-                                    {desc}
-                                </p>
                             </div>
                         ))}
+                    </div>
+                    <div className="text-center mt-8">
+                        <Link
+                            href="/about"
+                            className="inline-block text-green-700 font-semibold text-sm hover:underline"
+                        >
+                            Learn more about our services →
+                        </Link>
                     </div>
                 </div>
             </section>
 
-            {/* ── 4. STATISTICS ── */}
-            <section className="py-24 px-6 bg-green-800 text-white">
+            {/* ── 3. STATISTICS ── */}
+            <section className="py-20 px-6 bg-green-800 text-white">
                 <div className="max-w-5xl mx-auto">
-                    <div className="text-center mb-14">
+                    <div className="text-center mb-12">
                         <span className="text-green-300 text-sm font-semibold uppercase tracking-widest">
                             By The Numbers
                         </span>
-                        <h2 className="text-4xl font-bold mt-3">
+                        <h2 className="text-3xl font-bold mt-3">
                             Our Track Record
                         </h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                         {[
                             {
                                 label: "Projects Completed",
@@ -474,62 +333,17 @@ export default function Home({ stats }) {
                 </div>
             </section>
 
-            {/* ── 5. TEAM ── */}
-            <section className="py-24 px-6 bg-white">
+            {/* ── 4. WORK GALLERY ── */}
+            <section className="py-20 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-14">
-                        <span className="text-green-600 text-sm font-semibold uppercase tracking-widest">
-                            The People
-                        </span>
-                        <h2 className="text-4xl font-bold text-gray-900 mt-3">
-                            Meet Our Team
-                        </h2>
-                        <p className="text-gray-500 mt-4 max-w-xl mx-auto">
-                            Our licensed surveyors and specialists bring decades
-                            of combined experience.
-                        </p>
-                    </div>
-                    <div className="grid md:grid-cols-4 gap-6">
-                        {team.map(({ name, role, exp }) => {
-                            const parts = name.trim().split(" ");
-                            const initials = (
-                                parts[0][0] +
-                                (parts.length > 1
-                                    ? parts[parts.length - 1][0]
-                                    : "")
-                            ).toUpperCase();
-                            return (
-                                <div key={name} className="text-center group">
-                                    <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-green-700 group-hover:bg-green-700 group-hover:text-white transition duration-300">
-                                        {initials}
-                                    </div>
-                                    <h3 className="font-bold text-gray-800 text-sm">
-                                        {name}
-                                    </h3>
-                                    <p className="text-green-600 text-xs mt-1 font-medium">
-                                        {role}
-                                    </p>
-                                    <p className="text-gray-400 text-xs mt-1">
-                                        {exp}
-                                    </p>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── 6. WORK GALLERY ── */}
-            <section className="py-24 px-6 bg-gray-50">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-14">
+                    <div className="text-center mb-12">
                         <span className="text-green-600 text-sm font-semibold uppercase tracking-widest">
                             Our Work
                         </span>
-                        <h2 className="text-4xl font-bold text-gray-900 mt-3">
+                        <h2 className="text-3xl font-bold text-gray-900 mt-3">
                             Work in the Field
                         </h2>
-                        <p className="text-gray-500 mt-4">
+                        <p className="text-gray-500 mt-3 text-sm">
                             Click any image to view full size.
                         </p>
                     </div>
@@ -565,43 +379,52 @@ export default function Home({ stats }) {
                 </div>
             </section>
 
-            {/* ── 7. SKILLS ── */}
-            <section className="py-24 px-6 bg-white">
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-14">
-                        <span className="text-green-600 text-sm font-semibold uppercase tracking-widest">
-                            Expertise
-                        </span>
-                        <h2 className="text-4xl font-bold text-gray-900 mt-3">
-                            Our Skills
-                        </h2>
-                        <p className="text-gray-500 mt-4">
-                            Years of experience reflected in our technical
-                            capabilities.
-                        </p>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-x-16">
-                        {skills.map((skill) => (
-                            <SkillBar key={skill.label} {...skill} />
-                        ))}
+            {/* ── 5. CTA BANNER ── */}
+            <section
+                className="py-20 px-6 text-center"
+                style={{
+                    background: "linear-gradient(135deg, #064e3b, #065f46)",
+                }}
+            >
+                <div className="max-w-2xl mx-auto">
+                    <h2 className="text-3xl font-bold text-white mb-4">
+                        Ready to start your project?
+                    </h2>
+                    <p className="text-green-200 text-sm mb-8 leading-relaxed">
+                        Book a consultation with our licensed surveyors today.
+                        We cover all states across Malaysia.
+                    </p>
+                    <div className="flex flex-wrap gap-4 justify-center">
+                        <Link
+                            href="/contact"
+                            className="bg-white text-green-800 px-8 py-3.5 rounded-full font-bold text-sm hover:bg-green-50 transition"
+                        >
+                            Book a Consultation →
+                        </Link>
+                        <Link
+                            href="/about"
+                            className="border-2 border-white text-white px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-white hover:text-green-800 transition"
+                        >
+                            Learn About Us
+                        </Link>
                     </div>
                 </div>
             </section>
 
-            {/* ── 8. MAP LOCATION ── */}
-            <section className="py-24 px-6 bg-gray-50">
+            {/* ── 6. MAP SECTION ── */}
+            <section className="px-6 py-16 bg-gray-50">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-14">
+                    <div className="text-center mb-12">
                         <span className="text-green-600 text-sm font-semibold uppercase tracking-widest">
                             Find Us
                         </span>
-                        <h2 className="text-4xl font-bold text-gray-900 mt-3">
+                        <h2 className="text-3xl font-bold text-gray-900 mt-3">
                             Our Location
                         </h2>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8 items-start">
                         {/* Contact info */}
-                        <div className="space-y-6">
+                        <div className="space-y-5">
                             {[
                                 {
                                     icon: "📍",
@@ -643,25 +466,25 @@ export default function Home({ stats }) {
                             ))}
                             <Link
                                 href="/contact"
-                                className="inline-block w-full text-center bg-green-700 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-green-800 transition mt-4"
+                                className="inline-block w-full text-center bg-green-700 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-green-800 transition mt-2"
                             >
                                 Book a Consultation →
                             </Link>
                         </div>
 
-                        {/* Leaflet Map */}
+                        {/* Map container */}
                         <div
+                            id="home-map"
                             className="md:col-span-2 rounded-2xl overflow-hidden border border-gray-100"
-                            style={{ height: "400px" }}
-                            id="map"
-                        ></div>
+                            style={{ height: "380px", zIndex: 1 }}
+                        />
                     </div>
                 </div>
             </section>
 
             {/* ── FOOTER ── */}
             <footer className="bg-gray-900 text-gray-400 py-12 px-6">
-                <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+                <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
                     <div>
                         <p className="text-white font-bold text-lg mb-2">
                             JURUKUR VISI
@@ -671,6 +494,8 @@ export default function Home({ stats }) {
                             consultancy based in Selangor, Malaysia.
                         </p>
                     </div>
+
+                    {/* Quick Links */}
                     <div>
                         <p className="text-white font-medium mb-3">
                             Quick Links
@@ -678,6 +503,7 @@ export default function Home({ stats }) {
                         <div className="space-y-2 text-sm">
                             {[
                                 ["Home", "/"],
+                                ["About", "/about"],
                                 ["Projects", "/projects"],
                                 ["Contact", "/contact"],
                                 ["Staff Login", "/login"],
@@ -693,6 +519,8 @@ export default function Home({ stats }) {
                             ))}
                         </div>
                     </div>
+
+                    {/* Contact */}
                     <div>
                         <p className="text-white font-medium mb-3">Contact</p>
                         <div className="space-y-2 text-sm">
@@ -701,41 +529,41 @@ export default function Home({ stats }) {
                             <p>✉️ info@jurukurvisi.com</p>
                         </div>
                     </div>
+
+                    {/* Find Us */}
+                    <div>
+                        <p className="text-white font-medium mb-3">Find Us</p>
+                        <div className="space-y-2 text-sm">
+                            <a
+                                href="https://www.facebook.com/jurukurvisi"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-blue-400 transition"
+                            >
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                </svg>
+                                Jurukur Visi Sdn Bhd
+                            </a>
+                        </div>
+                    </div>
                 </div>
+
+                {/* Copyright */}
                 <div className="max-w-6xl mx-auto mt-8 pt-8 border-t border-gray-800 text-center text-xs">
                     © {new Date().getFullYear()} Jurukur Visi Sdn Bhd. All
                     rights reserved.
                 </div>
             </footer>
 
-            {/* Lightbox */}
             {lightbox && (
                 <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
             )}
-
-            {/* Leaflet map script */}
-            <link
-                rel="stylesheet"
-                href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-            />
-            <script
-                dangerouslySetInnerHTML={{
-                    __html: `
-                        setTimeout(function() {
-                            if (typeof L === 'undefined') return;
-                            var map = L.map('map').setView([3.2115, 101.5170], 15);
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                attribution: '© OpenStreetMap contributors'
-                            }).addTo(map);
-                            L.marker([3.2115, 101.5170])
-                                .addTo(map)
-                                .bindPopup('<b>Jurukur Visi Sdn Bhd</b><br>Sungai Buloh, Selangor')
-                                .openPopup();
-                        }, 500);
-                    `,
-                }}
-            />
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" />
         </PublicLayout>
     );
 }

@@ -21,6 +21,16 @@ class PublicController extends Controller
         return Inertia::render('Home', compact('stats'));
     }
 
+    // About page
+    public function about()
+    {
+        $stats = [
+            'projects' => Project::count(),
+        ];
+
+        return Inertia::render('About', compact('stats'));
+    }
+
     // Projects page
     public function projects()
     {
