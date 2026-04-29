@@ -1,8 +1,12 @@
+// This file is for the "Create User" page in the admin dashboard. It provides a form for creating a new staff account, with fields for full name, username, email, and a temporary password. 
+// The password field includes a strength meter and checklist to help admins create strong passwords. 
+
 import AdminLayout from "../../../Layouts/AdminLayout";
 import { useForm } from "@inertiajs/react";
 import { useState } from "react";
 import { Link } from "@inertiajs/react";
 
+// Main component for creating a new staff account in the admin dashboard
 export default function Create() {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
@@ -12,11 +16,13 @@ export default function Create() {
         password: "",
     });
 
+    // Handle form submission to create a new user account via POST request
     function submit(e) {
         e.preventDefault();
         post("/admin/users/create");
     }
 
+    // Password strength checks
     const checks = {
         length: data.password.length >= 15,
         uppercase: /[A-Z]/.test(data.password),
@@ -31,6 +37,7 @@ export default function Create() {
 
     return (
         <AdminLayout>
+            {/* Page Header */}
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">
@@ -49,7 +56,9 @@ export default function Create() {
                 </Link>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-8 max-w-lg mx-auto">
+            {/* Form */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 max-w-2xl mx-auto">
+                
                 {/* Info banner */}
                 <div
                     className="flex gap-3 p-4 rounded-xl mb-6"
@@ -75,6 +84,7 @@ export default function Create() {
                 </div>
 
                 <form onSubmit={submit} className="space-y-5">
+                    
                     {/* Full name */}
                     <div>
                         <label className="block text-sm font-medium text-gray-600 mb-1.5">
@@ -142,7 +152,6 @@ export default function Create() {
                         )}
                     </div>
 
-                    {/* Password */}
                     {/* Password */}
                     <div>
                         <label className="block text-sm font-medium text-gray-600 mb-1.5">
@@ -315,6 +324,7 @@ export default function Create() {
                         )}
                     </div>
 
+                    {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={processing}

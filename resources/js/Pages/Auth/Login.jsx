@@ -1,8 +1,12 @@
+// A React component for the staff login page of the Jurukur Visi application.
+// This component includes a form for username and password input, with a toggle to show/hide the password, and a link to return to the home page.
+
 import { useForm, usePage } from "@inertiajs/react";
 import ToastContainer from "../../Components/ToastContainer";
 import { useState } from "react";
 import { FaHome } from "react-icons/fa";
 
+// The Login component renders the login form and handles user authentication
 export default function Login() {
     const { errors = {} } = usePage().props;
     const [showPassword, setShowPassword] = useState(false);
@@ -11,29 +15,156 @@ export default function Login() {
         password: "",
     });
 
+    // Handle form submission by sending a POST request to the /login route with the entered username and password
     function submit(e) {
         e.preventDefault();
         post("/login");
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div
+            className="min-h-screen flex items-center justify-center"
+            style={{
+                background: "linear-gradient(135deg,#022c22,#064e3b,#065f46)",
+                backgroundSize: "300% 300%",
+                position: "relative",
+                overflow: "hidden",
+            }}
+        >
+            <style>{`
+                @keyframes gradShift { 0%{background-position:100% 50%} 50%{background-position:0% 50%} 100%{background-position:100% 50%} }
+                @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+                .login-input { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+                .login-input:focus { border-color: #4ade80 !important; box-shadow: 0 0 0 3px rgba(74,222,128,0.12); outline: none; }
+                .login-btn:hover { background: #065f46 !important; }
+            `}</style>
+
             <ToastContainer />
 
-            {/* Login Form */}
-            <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-md border border-gray-100">
-                <h1 className="text-2xl font-medium text-green-800 text-center mb-2">
-                    JURUKUR VISI
-                </h1>
-                <h2 className="text-center text-gray-500 mb-8 text-sm">
-                    Staff Login
-                </h2>
+            {/* Decorative rings */}
+            <div
+                style={{
+                    position: "absolute",
+                    top: -80,
+                    right: -80,
+                    width: 300,
+                    height: 300,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(110,231,183,0.1)",
+                    pointerEvents: "none",
+                }}
+            />
+            <div
+                style={{
+                    position: "absolute",
+                    top: -40,
+                    right: -40,
+                    width: 180,
+                    height: 180,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(110,231,183,0.15)",
+                    pointerEvents: "none",
+                }}
+            />
+            <div
+                style={{
+                    position: "absolute",
+                    bottom: -60,
+                    left: -60,
+                    width: 220,
+                    height: 220,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(110,231,183,0.08)",
+                    pointerEvents: "none",
+                }}
+            />
 
-                {/* Login Form */}
-                <form onSubmit={submit} className="space-y-5">
+            {/* Card */}
+            <div
+                style={{
+                    background: "#fff",
+                    borderRadius: 20,
+                    border: "1px solid #e5e7eb",
+                    padding: "40px 36px",
+                    width: "100%",
+                    maxWidth: 420,
+                    boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
+                    animation: "fadeUp 0.6s cubic-bezier(.22,1,.36,1) both",
+                    position: "relative",
+                    zIndex: 1,
+                }}
+            >
+                {/* Header */}
+                <div style={{ textAlign: "center", marginBottom: 28 }}>
+                    {/* Logo mark */}
+                    <div
+                        style={{
+                            width: 52,
+                            height: 52,
+                            background:
+                                "linear-gradient(135deg,#064e3b,#065f46)",
+                            borderRadius: 14,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto 14px",
+                            fontSize: 22,
+                        }}
+                    >
+                        🗺️
+                    </div>
+                    <h1
+                        style={{
+                            fontSize: 20,
+                            fontWeight: 800,
+                            color: "#064e3b",
+                            letterSpacing: "0.04em",
+                        }}
+                    >
+                        JURUKUR VISI
+                    </h1>
+                    <p
+                        style={{
+                            fontSize: 12,
+                            color: "#9ca3af",
+                            marginTop: 4,
+                            fontWeight: 500,
+                        }}
+                    >
+                        Staff Portal · Sign in to continue
+                    </p>
+                </div>
+
+                {/* Divider */}
+                <div
+                    style={{
+                        height: 1,
+                        background: "#f3f4f6",
+                        marginBottom: 24,
+                    }}
+                />
+
+                {/* Form */}
+                <form
+                    onSubmit={submit}
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 16,
+                    }}
+                >
                     {/* Username */}
                     <div>
-                        <label className="block text-sm text-gray-600 mb-1">
+                        <label
+                            style={{
+                                display: "block",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#374151",
+                                marginBottom: 6,
+                                letterSpacing: "0.02em",
+                            }}
+                        >
                             Username
                         </label>
                         <input
@@ -42,7 +173,15 @@ export default function Login() {
                             onChange={(e) =>
                                 setData("username", e.target.value)
                             }
-                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                            className="login-input"
+                            style={{
+                                width: "100%",
+                                border: "1.5px solid #e5e7eb",
+                                borderRadius: 10,
+                                padding: "10px 14px",
+                                fontSize: 13,
+                                boxSizing: "border-box",
+                            }}
                             placeholder="Enter your username"
                             required
                         />
@@ -50,17 +189,34 @@ export default function Login() {
 
                     {/* Password */}
                     <div>
-                        <label className="block text-sm text-gray-600 mb-1">
+                        <label
+                            style={{
+                                display: "block",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#374151",
+                                marginBottom: 6,
+                                letterSpacing: "0.02em",
+                            }}
+                        >
                             Password
                         </label>
-                        <div className="relative">
+                        <div style={{ position: "relative" }}>
                             <input
                                 type={showPassword ? "text" : "password"}
                                 value={data.password}
                                 onChange={(e) =>
                                     setData("password", e.target.value)
                                 }
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 pr-10"
+                                className="login-input"
+                                style={{
+                                    width: "100%",
+                                    border: "1.5px solid #e5e7eb",
+                                    borderRadius: 10,
+                                    padding: "10px 40px 10px 14px",
+                                    fontSize: 13,
+                                    boxSizing: "border-box",
+                                }}
                                 placeholder="Enter your password"
                                 required
                             />
@@ -68,13 +224,24 @@ export default function Login() {
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 tabIndex={-1}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                                style={{
+                                    position: "absolute",
+                                    right: 12,
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "#9ca3af",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    padding: 0,
+                                }}
                             >
                                 {showPassword ? (
-                                    // Password is visible — show slashed eye to indicate "click to hide"
                                     <svg
-                                        width="18"
-                                        height="18"
+                                        width="17"
+                                        height="17"
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth="2"
@@ -83,10 +250,9 @@ export default function Login() {
                                         <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22" />
                                     </svg>
                                 ) : (
-                                    // Password is hidden — show open eye to indicate "click to show"
                                     <svg
-                                        width="18"
-                                        height="18"
+                                        width="17"
+                                        height="17"
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth="2"
@@ -100,24 +266,61 @@ export default function Login() {
                         </div>
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Submit */}
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full bg-green-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-800 transition disabled:opacity-50"
+                        className="login-btn"
+                        style={{
+                            width: "100%",
+                            background:
+                                "linear-gradient(135deg,#064e3b,#065f46)",
+                            color: "#fff",
+                            padding: "12px",
+                            borderRadius: 10,
+                            fontSize: 13,
+                            fontWeight: 700,
+                            border: "none",
+                            cursor: processing ? "not-allowed" : "pointer",
+                            opacity: processing ? 0.6 : 1,
+                            marginTop: 4,
+                            transition: "all 0.25s ease",
+                        }}
                     >
-                        {processing ? "Logging in..." : "Log In"}
+                        {processing ? "Signing in..." : "Sign In →"}
                     </button>
                 </form>
 
-                {/* Footer Links */}
-                <div className="flex justify-end mt-6 text-sm">
+                {/* Footer */}
+                <div
+                    style={{
+                        marginTop: 20,
+                        paddingTop: 16,
+                        borderTop: "1px solid #f3f4f6",
+                        display: "flex",
+                        justifyContent: "flex-end",
+                    }}
+                >
                     <a
                         href="/"
-                        className="flex items-center gap-2 text-gray-400 hover:underline"
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            fontSize: 12,
+                            color: "#9ca3af",
+                            textDecoration: "none",
+                            transition: "color 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.color = "#065f46")
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.color = "#9ca3af")
+                        }
                     >
-                        <FaHome />
-                        <span>Back to home</span>
+                        <FaHome size={12} />
+                        Back to home
                     </a>
                 </div>
             </div>

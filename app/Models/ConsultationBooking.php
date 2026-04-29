@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+// Model for consultation bookings.
 class ConsultationBooking extends Model
 {
     protected $fillable = [

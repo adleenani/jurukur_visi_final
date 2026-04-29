@@ -1,3 +1,6 @@
+// Tailwind CSS configuration file for the Laravel application. This file defines the content sources for Tailwind to scan for class names, extends the default theme with custom font sizes and line heights, 
+// and specifies any plugins to be used with Tailwind CSS. The configuration allows for customization of the design system used in the application while maintaining a consistent and responsive design across different screen sizes.
+
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [

@@ -1,3 +1,6 @@
+// A React component for displaying toast notifications with different types (success, error, info) and automatic dismissal after a certain time. 
+// The component uses inline styles for customization and includes a timer bar to visually indicate the remaining time before the toast disappears.
+
 import { useEffect, useState } from "react";
 
 export default function Toast({ message, type = "success", onClose }) {

@@ -6,11 +6,13 @@ export default function ToastContainer() {
     const { flash, errors } = usePage().props;
     const [toasts, setToasts] = useState([]);
 
+    // Add a new toast
     function addToast(message, type) {
         const id = Date.now() + Math.random();
         setToasts((prev) => [...prev, { id, message, type }]);
     }
 
+    // Remove toast by ID
     function removeToast(id) {
         setToasts((prev) => prev.filter((t) => t.id !== id));
     }

@@ -12,8 +12,11 @@ export default function Navbar() {
     ];
 
     return (
+
+        // Desktop: flex with gap, Mobile: hidden until hamburger clicked
         <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-50 shadow-sm">
             <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                
                 {/* Logo + Brand */}
                 <Link href="/" className="flex items-center gap-2.5">
                     <img

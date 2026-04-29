@@ -1,3 +1,5 @@
+// Layout component for admin pages with sidebar navigation and mobile responsiveness
+
 import { Link, router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import ToastContainer from "../Components/ToastContainer";
@@ -10,6 +12,7 @@ export default function AdminLayout({ children }) {
         router.post("/logout");
     }
 
+    // Desktop: sidebar always visible, Mobile: hidden until hamburger clicked
     return (
         <div className="min-h-screen bg-gray-50 flex">
             {/* Mobile overlay */}
@@ -65,6 +68,7 @@ export default function AdminLayout({ children }) {
 
             {/* Main content */}
             <main className="lg:ml-56 flex-1 min-w-0">
+
                 {/* Mobile topbar */}
                 <div className="lg:hidden flex items-center gap-4 px-4 py-3 bg-green-800 text-white sticky top-0 z-10">
                     <button

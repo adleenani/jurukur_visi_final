@@ -1,6 +1,10 @@
+// This page allows users to check the status of their booking by entering a reference number. 
+// It displays the current status of the booking along with details and any notes from the admin team.
+
 import PublicLayout from "../Layouts/PublicLayout";
 import { useForm } from "@inertiajs/react";
 
+// Configuration for different booking statuses, including colors, icons, titles and descriptions for display
 const statusConfig = {
     pending: {
         color: "#854d0e",
@@ -36,6 +40,7 @@ const statusConfig = {
     },
 };
 
+// DetailRow component renders a single row of booking details with a label and value, and is used within the booking details section of the page
 function DetailRow({ label, value }) {
     if (!value) return null;
     return (
@@ -50,22 +55,27 @@ function DetailRow({ label, value }) {
     );
 }
 
+// The BookingStatus component renders the booking status page where users can enter their reference number to check the status of their consultation request. 
+// It displays the current status along with booking details and any notes from the admin team.
 export default function BookingStatus({ booking, searched }) {
     const { data, setData, post, processing } = useForm({
         reference_number: "",
     });
 
+    // Handle form submission by sending a POST request to the /booking-status route with the entered reference number to retrieve booking details
     function submit(e) {
         e.preventDefault();
         post("/booking-status");
     }
 
+    // Determine the status configuration based on the booking's current status, defaulting to "pending" if not found
     const status = booking
         ? (statusConfig[booking.status] ?? statusConfig.pending)
         : null;
 
     return (
         <PublicLayout>
+        
             {/* Hero */}
             <section
                 className="py-16 px-6 text-white text-center"
@@ -131,6 +141,7 @@ export default function BookingStatus({ booking, searched }) {
                     {searched && (
                         <div className="mt-6">
                             {!booking ? (
+
                                 /* Not found */
                                 <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
                                     <div
@@ -158,8 +169,10 @@ export default function BookingStatus({ booking, searched }) {
                                     </a>
                                 </div>
                             ) : (
+
                                 /* Found */
                                 <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                    
                                     {/* Status banner */}
                                     <div
                                         className="px-6 py-5 flex items-center gap-4"

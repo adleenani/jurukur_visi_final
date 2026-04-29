@@ -6,13 +6,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-// Controller for managing users (admin)
+// Controller for managing users (PIC).
 class UserController extends Controller
 {
-    // List all users (admin view)
+    // List all users (PIC view).
     public function index(Request $request)
     {
-        // Fetch users with optional search and status filters, only for 'pic' role, and paginate results
+        // Fetch users with optional search and status filters, only for 'pic' role, and paginate results.
         $query = User::where('role', 'pic')->orderBy('created_at', 'desc');
 
         // Apply status filter if provided (active/inactive)
@@ -20,7 +20,7 @@ class UserController extends Controller
             $query->where('is_active', $request->status === 'active');
         }
 
-        // Apply search filter across multiple fields
+        // Apply search filter across multiple fields.
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('full_name', 'like', "%{$request->search}%")
@@ -29,7 +29,7 @@ class UserController extends Controller
             });
         }
 
-        // Paginate results and maintain query string for filters
+        // Paginate results and maintain query string for filters.
         $users = $query->paginate(10)->withQueryString();
 
         // Gather stats for user management page
@@ -39,7 +39,7 @@ class UserController extends Controller
             'inactive' => User::where('role', 'pic')->where('is_active', false)->count(),
         ];
 
-        // Pass users, stats, and current filters to the view
+        // Pass users, stats, and current filters to the view.
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
             'stats' => $stats,
@@ -47,13 +47,13 @@ class UserController extends Controller
         ]);
     }
 
-    // Show create user form
+    // Show create user form.
     public function create()
     {
         return Inertia::render('Admin/Users/Create');
     }
 
-    // Store new user
+    // Store new user.
     public function store(Request $request)
     {
         // Validate input with strong rules and custom messages
@@ -69,7 +69,7 @@ class UserController extends Controller
             ],
         ]);
 
-        // Create new user with hashed password and default role 'pic', but set is_active to false until admin approval
+        // Create new user with hashed password and default role 'pic', but set is_active to false until admin approval.
         User::create([
             'username' => $request->username,
             'full_name' => $request->full_name,
@@ -84,7 +84,7 @@ class UserController extends Controller
             ->with('success', "Staff account for {$request->full_name} created! They must change their password on first login.");
     }
 
-    // Activate a user
+    // Activate a user.
     public function approve($id)
     {
         // Find user by ID and set is_active to true
@@ -95,7 +95,7 @@ class UserController extends Controller
             ->with('success', "{$user->full_name} has been activated.");
     }
 
-    // Deactivate a user
+    // Deactivate a user.
     public function reject($id)
     {
         // Find user by ID and set is_active to false
@@ -106,7 +106,7 @@ class UserController extends Controller
             ->with('success', "{$user->full_name} has been deactivated.");
     }
 
-    // Reset user password
+    // Reset user password.
     public function resetPassword(Request $request, $id)
     {
         // Validate input with strong rules
@@ -119,7 +119,7 @@ class UserController extends Controller
             ],
         ]);
 
-        // Find user by ID and update password with hashed value, also set must_change_password to true to force change on next login
+        // Find user by ID and update password with hashed value, also set must_change_password to true to force change on next login.
         $user = User::findOrFail($id);
         $user->update([
             'password' => password_hash($request->password, PASSWORD_ARGON2ID),
@@ -129,7 +129,7 @@ class UserController extends Controller
             ->with('success', "Password for {$user->full_name} has been reset.");
     }
 
-    // Delete a user
+    // Delete a user.
     public function destroy($id)
     {
         $user = User::findOrFail($id);

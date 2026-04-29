@@ -1,5 +1,8 @@
 <?php
 
+// Web routes for the application, defining public routes, authentication routes, and protected routes for PIC users. 
+// The routes are organized to handle various functionalities such as displaying pages, managing users, projects, and bookings.
+
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ProjectController;
@@ -50,6 +53,7 @@ Route::middleware(['role:pic'])->group(function () {
 
     // Booking management
     Route::get('/admin/bookings', [BookingController::class, 'index'])->name('admin.bookings');
+    Route::get('/admin/bookings/{reference_number}', [BookingController::class, 'show'])->name('admin.bookings.show');
     Route::post('/admin/bookings/{reference_number}/confirm', [BookingController::class, 'confirm'])->name('admin.bookings.confirm');
     Route::post('/admin/bookings/{reference_number}/reschedule', [BookingController::class, 'reschedule'])->name('admin.bookings.reschedule');
     Route::post('/admin/bookings/{reference_number}/cancel', [BookingController::class, 'cancel'])->name('admin.bookings.cancel');

@@ -1,7 +1,12 @@
+// Admin Bookings Index — list, filter, search and manage bookings
+
 import AdminLayout from "../../../Layouts/AdminLayout";
 import { router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
+/* ─────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────── */
 const statusStyle = {
     pending: { bg: "#fef9c3", color: "#854d0e" },
     confirmed: { bg: "#d1fae5", color: "#065f46" },
@@ -29,35 +34,110 @@ function getAvatarColor(name) {
     return avatarColors[(name?.charCodeAt(0) ?? 0) % avatarColors.length];
 }
 
-const timeSlots = [
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-];
+/* ─────────────────────────────────────────────
+   STAT CARD
+───────────────────────────────────────────── */
+function StatCard({ label, value, color, bg, active, onClick }) {
+    return (
+        <div
+            onClick={onClick}
+            style={{
+                background: "#fff",
+                borderRadius: 14,
+                border: `1.5px solid ${active ? color : "#e5e7eb"}`,
+                padding: "16px 20px",
+                cursor: "pointer",
+                transition: "all 0.25s ease",
+                transform: active ? "translateY(-2px)" : "translateY(0)",
+                boxShadow: active ? `0 6px 20px ${color}22` : "none",
+                position: "relative",
+                overflow: "hidden",
+            }}
+        >
+            <div
+                style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 4,
+                    background: active ? color : "#e5e7eb",
+                    borderRadius: "14px 0 0 14px",
+                    transition: "background 0.25s",
+                }}
+            />
+            <p
+                style={{
+                    fontSize: 28,
+                    fontWeight: 800,
+                    color: active ? color : "#374151",
+                    paddingLeft: 8,
+                }}
+            >
+                {value}
+            </p>
+            <p
+                style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#9ca3af",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    marginTop: 2,
+                    paddingLeft: 8,
+                }}
+            >
+                {label}
+            </p>
+        </div>
+    );
+}
 
+/* ─────────────────────────────────────────────
+   PAGINATION
+───────────────────────────────────────────── */
 function Pagination({ data }) {
     if (data.last_page <= 1) return null;
     return (
-        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-400">
-                Showing {data.from}–{data.to} of {data.total} records
+        <div
+            style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: "1px solid #f3f4f6",
+            }}
+        >
+            <p style={{ fontSize: 11, color: "#9ca3af" }}>
+                Showing{" "}
+                <span style={{ fontWeight: 600, color: "#374151" }}>
+                    {data.from}–{data.to}
+                </span>{" "}
+                of{" "}
+                <span style={{ fontWeight: 600, color: "#374151" }}>
+                    {data.total}
+                </span>{" "}
+                records
             </p>
-            <div className="flex gap-1.5">
+            <div style={{ display: "flex", gap: 6 }}>
                 {data.links.map((link, i) => (
                     <button
                         key={i}
                         onClick={() => link.url && router.get(link.url)}
                         disabled={!link.url}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
                         style={{
-                            background: link.active ? "#064e3b" : "white",
-                            color: link.active ? "white" : "#374151",
-                            border: "0.5px solid #e5e7eb",
-                            opacity: !link.url ? 0.4 : 1,
+                            padding: "5px 11px",
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: link.active
+                                ? "linear-gradient(135deg,#064e3b,#065f46)"
+                                : "#fff",
+                            color: link.active ? "#fff" : "#374151",
+                            border: `1px solid ${link.active ? "#064e3b" : "#e5e7eb"}`,
+                            opacity: !link.url ? 0.35 : 1,
                             cursor: !link.url ? "not-allowed" : "pointer",
+                            transition: "all 0.2s",
                         }}
                         dangerouslySetInnerHTML={{ __html: link.label }}
                     />
@@ -67,26 +147,17 @@ function Pagination({ data }) {
     );
 }
 
+/* ─────────────────────────────────────────────
+   MAIN
+───────────────────────────────────────────── */
 export default function Index({ bookings, stats, filters }) {
-    const { flash } = usePage().props;
     const [search, setSearch] = useState(filters.search ?? "");
     const [status, setStatus] = useState(filters.status ?? "all");
-    const [modal, setModal] = useState(null);
-    const [action, setAction] = useState("confirm");
-    const [form, setForm] = useState({
-        confirmed_date: "",
-        confirmed_time: "",
-        admin_response: "",
-    });
-    const [submitting, setSubmitting] = useState(false);
 
-    function applyFilters(newSearch, newStatus) {
+    function applyFilters(s, st) {
         router.get(
             "/admin/bookings",
-            {
-                search: newSearch,
-                status: newStatus,
-            },
+            { search: s, status: st },
             { preserveState: true, replace: true },
         );
     }
@@ -95,103 +166,139 @@ export default function Index({ bookings, stats, filters }) {
         setSearch(e.target.value);
         applyFilters(e.target.value, status);
     }
-
     function handleStatus(s) {
         setStatus(s);
         applyFilters(search, s);
     }
 
-    function openModal(booking) {
-        setModal(booking);
-        setAction("confirm");
-        setForm({ confirmed_date: "", confirmed_time: "", admin_response: "" });
-    }
-
-    function closeModal() {
-        setModal(null);
-    }
-
-    function submitAction() {
-        setSubmitting(true);
-        const urls = {
-            confirm: `/admin/bookings/${modal.reference_number}/confirm`,
-            reschedule: `/admin/bookings/${modal.reference_number}/reschedule`,
-            cancel: `/admin/bookings/${modal.reference_number}/cancel`,
-        };
-        router.post(urls[action], form, {
-            onSuccess: () => {
-                closeModal();
-                setSubmitting(false);
-            },
-            onError: () => setSubmitting(false),
-        });
-    }
-
-    function deleteBooking(reference_number) {
-        if (confirm("Delete this booking permanently?")) {
-            router.post(`/admin/bookings/${reference_number}/delete`);
-        }
+    function deleteBooking(ref) {
+        if (confirm("Delete this booking permanently?"))
+            router.post(`/admin/bookings/${ref}/delete`);
     }
 
     return (
         <AdminLayout>
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">
-                    Consultation Bookings
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                    All client consultation requests — search, filter and manage
-                    from here.
-                </p>
+            <style>{`
+                @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+                .tbl-row { transition: background 0.15s ease; }
+                .tbl-row:hover { background: #f9fafb; }
+                .action-pill { transition: all 0.2s ease; }
+                .action-pill:hover { filter: brightness(0.93); transform: translateY(-1px); }
+                .search-box:focus-within { border-color: #4ade80 !important; box-shadow: 0 0 0 3px rgba(74,222,128,0.1); }
+            `}</style>
+
+            {/* ── HEADER ── */}
+            <div
+                style={{
+                    marginBottom: 24,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    animation: "fadeUp 0.5s cubic-bezier(.22,1,.36,1) both",
+                }}
+            >
+                <div>
+                    <p
+                        style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#9ca3af",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.1em",
+                            marginBottom: 4,
+                        }}
+                    >
+                        Admin Panel
+                    </p>
+                    <h1
+                        style={{
+                            fontSize: 24,
+                            fontWeight: 800,
+                            color: "#111827",
+                            marginBottom: 2,
+                        }}
+                    >
+                        Consultation Bookings
+                    </h1>
+                    <p style={{ fontSize: 13, color: "#6b7280" }}>
+                        All client consultation requests — search, filter and
+                        manage from here.
+                    </p>
+                </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            {/* ── STAT CARDS (also act as filters) ── */}
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4,1fr)",
+                    gap: 12,
+                    marginBottom: 20,
+                    animation:
+                        "fadeUp 0.5s cubic-bezier(.22,1,.36,1) 0.06s both",
+                }}
+            >
                 {[
                     {
                         label: "Pending",
                         value: stats.pending,
                         color: "#d97706",
-                        bg: "#fffbeb",
+                        key: "pending",
                     },
                     {
                         label: "Confirmed",
                         value: stats.confirmed,
                         color: "#15803d",
-                        bg: "#f0fdf4",
+                        key: "confirmed",
                     },
                     {
                         label: "Rescheduled",
                         value: stats.rescheduled,
                         color: "#1d4ed8",
-                        bg: "#dbeafe",
+                        key: "rescheduled",
                     },
                     {
                         label: "Cancelled",
                         value: stats.cancelled,
                         color: "#dc2626",
-                        bg: "#fef2f2",
+                        key: "cancelled",
                     },
-                ].map(({ label, value, color, bg }) => (
-                    <div
-                        key={label}
-                        className="rounded-2xl p-4 border"
-                        style={{ background: bg, borderColor: "transparent" }}
-                    >
-                        <p className="text-3xl font-bold" style={{ color }}>
-                            {value}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1 font-semibold uppercase tracking-wide">
-                            {label}
-                        </p>
-                    </div>
+                ].map(({ label, value, color, key }) => (
+                    <StatCard
+                        key={key}
+                        label={label}
+                        value={value}
+                        color={color}
+                        active={status === key}
+                        onClick={() =>
+                            handleStatus(status === key ? "all" : key)
+                        }
+                    />
                 ))}
             </div>
 
-            {/* Toolbar */}
-            <div className="flex items-center gap-3 mb-4">
-                <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1">
+            {/* ── TOOLBAR ── */}
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 14,
+                    animation:
+                        "fadeUp 0.5s cubic-bezier(.22,1,.36,1) 0.1s both",
+                }}
+            >
+                {/* Status tabs */}
+                <div
+                    style={{
+                        display: "flex",
+                        gap: 4,
+                        background: "#fff",
+                        border: "1.5px solid #e5e7eb",
+                        borderRadius: 10,
+                        padding: 4,
+                    }}
+                >
                     {[
                         "all",
                         "pending",
@@ -202,18 +309,42 @@ export default function Index({ bookings, stats, filters }) {
                         <button
                             key={s}
                             onClick={() => handleStatus(s)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition"
                             style={{
+                                padding: "6px 12px",
+                                borderRadius: 7,
+                                fontSize: 11,
+                                fontWeight: 600,
                                 background:
-                                    status === s ? "#064e3b" : "transparent",
-                                color: status === s ? "white" : "#6b7280",
+                                    status === s
+                                        ? "linear-gradient(135deg,#064e3b,#065f46)"
+                                        : "transparent",
+                                color: status === s ? "#fff" : "#6b7280",
+                                border: "none",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                                textTransform: "capitalize",
                             }}
                         >
                             {s}
                         </button>
                     ))}
                 </div>
-                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
+
+                {/* Search */}
+                <div
+                    className="search-box"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        background: "#fff",
+                        border: "1.5px solid #e5e7eb",
+                        borderRadius: 10,
+                        padding: "7px 14px",
+                        transition: "border-color 0.2s, box-shadow 0.2s",
+                        width: 240,
+                    }}
+                >
                     <svg
                         width="13"
                         height="13"
@@ -230,35 +361,69 @@ export default function Index({ bookings, stats, filters }) {
                         value={search}
                         onChange={handleSearch}
                         placeholder="Search name, email, ref..."
-                        className="outline-none bg-transparent text-gray-700"
                         style={{
-                            fontSize: "12px",
-                            fontFamily: "Raleway, sans-serif",
-                            width: "180px",
+                            outline: "none",
+                            background: "transparent",
+                            fontSize: 12,
+                            color: "#374151",
+                            flex: 1,
+                            border: "none",
                         }}
                     />
+                    {search && (
+                        <button
+                            onClick={() =>
+                                handleSearch({ target: { value: "" } })
+                            }
+                            style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "#9ca3af",
+                                fontSize: 14,
+                                padding: 0,
+                            }}
+                        >
+                            ✕
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                <table className="w-full" style={{ tableLayout: "fixed" }}>
+            {/* ── TABLE ── */}
+            <div
+                style={{
+                    background: "#fff",
+                    borderRadius: 16,
+                    border: "1px solid #e5e7eb",
+                    overflow: "hidden",
+                    animation:
+                        "fadeUp 0.5s cubic-bezier(.22,1,.36,1) 0.14s both",
+                }}
+            >
+                <table
+                    style={{
+                        width: "100%",
+                        tableLayout: "fixed",
+                        borderCollapse: "collapse",
+                    }}
+                >
                     <colgroup>
+                        <col style={{ width: "9%" }} />
+                        <col style={{ width: "20%" }} />
+                        <col style={{ width: "13%" }} />
                         <col style={{ width: "10%" }} />
-                        <col style={{ width: "23%" }} />
-                        <col style={{ width: "11%" }} />
-                        <col style={{ width: "11%" }} />
                         <col style={{ width: "9%" }} />
                         <col style={{ width: "9%" }} />
-                        <col style={{ width: "10%" }} />
-                        <col style={{ width: "10%" }} />
-                        <col style={{ width: "7%" }} />
+                        <col style={{ width: "9%" }} />
+                        <col style={{ width: "9%" }} />
+                        <col style={{ width: "12%" }} />
                     </colgroup>
                     <thead>
                         <tr
                             style={{
                                 background: "#f9fafb",
-                                borderBottom: "0.5px solid #e5e7eb",
+                                borderBottom: "1px solid #e5e7eb",
                             }}
                         >
                             {[
@@ -274,11 +439,14 @@ export default function Index({ bookings, stats, filters }) {
                             ].map((h) => (
                                 <th
                                     key={h}
-                                    className="px-4 py-3 text-left font-semibold text-gray-400"
                                     style={{
-                                        fontSize: "11px",
+                                        padding: "11px 14px",
+                                        textAlign: "left",
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: "#9ca3af",
                                         textTransform: "uppercase",
-                                        letterSpacing: "0.05em",
+                                        letterSpacing: "0.08em",
                                     }}
                                 >
                                     {h}
@@ -291,13 +459,26 @@ export default function Index({ bookings, stats, filters }) {
                             <tr>
                                 <td
                                     colSpan={9}
-                                    className="px-4 py-16 text-center text-gray-400 text-sm"
+                                    style={{
+                                        padding: "60px 20px",
+                                        textAlign: "center",
+                                        color: "#9ca3af",
+                                        fontSize: 13,
+                                    }}
                                 >
+                                    <div
+                                        style={{
+                                            fontSize: 36,
+                                            marginBottom: 10,
+                                        }}
+                                    >
+                                        📭
+                                    </div>
                                     No bookings found.
                                 </td>
                             </tr>
                         ) : (
-                            bookings.data.map((booking) => {
+                            bookings.data.map((booking, i) => {
                                 const av = getAvatarColor(booking.name);
                                 const s =
                                     statusStyle[booking.status] ??
@@ -305,15 +486,19 @@ export default function Index({ bookings, stats, filters }) {
                                 return (
                                     <tr
                                         key={booking.id}
+                                        className="tbl-row"
                                         style={{
-                                            borderBottom: "0.5px solid #f3f4f6",
+                                            borderBottom:
+                                                i < bookings.data.length - 1
+                                                    ? "1px solid #f3f4f6"
+                                                    : "none",
                                         }}
-                                        className="hover:bg-gray-50 transition"
                                     >
+                                        {/* Ref */}
                                         <td
-                                            className="px-4 py-3"
                                             style={{
-                                                fontSize: "9px",
+                                                padding: "12px 14px",
+                                                fontSize: 9,
                                                 fontFamily: "monospace",
                                                 color: "#9ca3af",
                                             }}
@@ -324,31 +509,58 @@ export default function Index({ bookings, stats, filters }) {
                                             )}
                                             ...
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-2">
+
+                                        {/* Client */}
+                                        <td style={{ padding: "12px 14px" }}>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 8,
+                                                }}
+                                            >
                                                 <div
-                                                    className="w-7 h-7 rounded-full flex items-center justify-center font-bold flex-shrink-0"
                                                     style={{
-                                                        fontSize: "9px",
+                                                        width: 28,
+                                                        height: 28,
+                                                        borderRadius: "50%",
                                                         background: av.bg,
                                                         color: av.color,
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent:
+                                                            "center",
+                                                        fontSize: 9,
+                                                        fontWeight: 800,
+                                                        flexShrink: 0,
                                                     }}
                                                 >
                                                     {getInitials(booking.name)}
                                                 </div>
-                                                <div>
+                                                <div style={{ minWidth: 0 }}>
                                                     <p
-                                                        className="font-semibold text-gray-800 truncate"
                                                         style={{
-                                                            fontSize: "12px",
+                                                            fontSize: 12,
+                                                            fontWeight: 600,
+                                                            color: "#111827",
+                                                            overflow: "hidden",
+                                                            textOverflow:
+                                                                "ellipsis",
+                                                            whiteSpace:
+                                                                "nowrap",
                                                         }}
                                                     >
                                                         {booking.name}
                                                     </p>
                                                     <p
-                                                        className="text-gray-400 truncate"
                                                         style={{
-                                                            fontSize: "10px",
+                                                            fontSize: 10,
+                                                            color: "#9ca3af",
+                                                            overflow: "hidden",
+                                                            textOverflow:
+                                                                "ellipsis",
+                                                            whiteSpace:
+                                                                "nowrap",
                                                         }}
                                                     >
                                                         {booking.email}
@@ -356,47 +568,83 @@ export default function Index({ bookings, stats, filters }) {
                                                 </div>
                                             </div>
                                         </td>
+
+                                        {/* Service */}
                                         <td
-                                            className="px-4 py-3 text-gray-600 truncate"
-                                            style={{ fontSize: "11px" }}
+                                            style={{
+                                                padding: "12px 14px",
+                                                fontSize: 11,
+                                                color: "#374151",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                whiteSpace: "nowrap",
+                                            }}
                                         >
                                             {booking.service_type}
                                         </td>
+
+                                        {/* Pref Date */}
                                         <td
-                                            className="px-4 py-3 text-gray-600"
-                                            style={{ fontSize: "11px" }}
+                                            style={{
+                                                padding: "12px 14px",
+                                                fontSize: 11,
+                                                color: "#374151",
+                                            }}
                                         >
-                                            {booking.preferred_date}
+                                            {booking.preferred_date
+                                                ? new Date(
+                                                      booking.preferred_date,
+                                                  ).toLocaleDateString("en-GB")
+                                                : "—"}
                                         </td>
+
+                                        {/* Time */}
                                         <td
-                                            className="px-4 py-3 text-gray-600"
-                                            style={{ fontSize: "11px" }}
+                                            style={{
+                                                padding: "12px 14px",
+                                                fontSize: 11,
+                                                color: "#374151",
+                                            }}
                                         >
-                                            {booking.preferred_time}
+                                            {booking.preferred_time ?? "—"}
                                         </td>
+
+                                        {/* Type */}
                                         <td
-                                            className="px-4 py-3 text-gray-600 capitalize"
-                                            style={{ fontSize: "11px" }}
+                                            style={{
+                                                padding: "12px 14px",
+                                                fontSize: 11,
+                                                color: "#374151",
+                                                textTransform: "capitalize",
+                                            }}
                                         >
                                             {booking.consultation_type}
                                         </td>
-                                        <td className="px-4 py-3">
+
+                                        {/* Status */}
+                                        <td style={{ padding: "12px 14px" }}>
                                             <span
-                                                className="font-bold capitalize"
                                                 style={{
-                                                    fontSize: "10px",
-                                                    padding: "3px 8px",
-                                                    borderRadius: "99px",
+                                                    fontSize: 10,
+                                                    fontWeight: 700,
+                                                    padding: "3px 9px",
+                                                    borderRadius: 99,
                                                     background: s.bg,
                                                     color: s.color,
+                                                    textTransform: "capitalize",
                                                 }}
                                             >
                                                 {booking.status}
                                             </span>
                                         </td>
+
+                                        {/* Submitted */}
                                         <td
-                                            className="px-4 py-3 text-gray-400"
-                                            style={{ fontSize: "10px" }}
+                                            style={{
+                                                padding: "12px 14px",
+                                                fontSize: 10,
+                                                color: "#9ca3af",
+                                            }}
                                         >
                                             {new Date(
                                                 booking.created_at,
@@ -406,39 +654,50 @@ export default function Index({ bookings, stats, filters }) {
                                                 year: "numeric",
                                             })}
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex flex-col gap-1">
-                                                <button
-                                                    onClick={() =>
-                                                        openModal(booking)
-                                                    }
-                                                    className="font-bold transition"
+
+                                        {/* Actions */}
+                                        <td style={{ padding: "12px 14px" }}>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: 5,
+                                                }}
+                                            >
+                                                <a
+                                                    href={`/admin/bookings/${booking.reference_number}`}
+                                                    className="action-pill"
                                                     style={{
-                                                        fontSize: "10px",
-                                                        background: "#064e3b",
-                                                        color: "white",
-                                                        padding: "4px 8px",
-                                                        borderRadius: "99px",
+                                                        fontSize: 10,
+                                                        fontWeight: 700,
+                                                        background:
+                                                            "linear-gradient(135deg,#064e3b,#065f46)",
+                                                        color: "#fff",
+                                                        padding: "4px 10px",
+                                                        borderRadius: 99,
                                                         border: "none",
                                                         cursor: "pointer",
+                                                        textAlign: "center",
+                                                        textDecoration: "none",
                                                     }}
                                                 >
                                                     Manage
-                                                </button>
+                                                </a>
                                                 <button
                                                     onClick={() =>
                                                         deleteBooking(
                                                             booking.reference_number,
                                                         )
                                                     }
-                                                    className="font-bold transition"
+                                                    className="action-pill"
                                                     style={{
-                                                        fontSize: "10px",
+                                                        fontSize: 10,
+                                                        fontWeight: 700,
                                                         background: "#fef2f2",
                                                         color: "#dc2626",
-                                                        padding: "4px 8px",
-                                                        borderRadius: "99px",
-                                                        border: "0.5px solid #fecaca",
+                                                        padding: "4px 10px",
+                                                        borderRadius: 99,
+                                                        border: "1px solid #fecaca",
                                                         cursor: "pointer",
                                                     }}
                                                 >
@@ -454,301 +713,6 @@ export default function Index({ bookings, stats, filters }) {
                 </table>
                 <Pagination data={bookings} />
             </div>
-
-            {/* Split panel modal — same as before */}
-            {modal && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ background: "rgba(0,0,0,0.4)" }}
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) closeModal();
-                    }}
-                >
-                    <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden border border-gray-100">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                            <div>
-                                <p className="font-bold text-gray-800">
-                                    Booking request
-                                </p>
-                                <p className="text-xs text-gray-400 mt-0.5">
-                                    Ref: {modal.reference_number}
-                                </p>
-                            </div>
-                            <span
-                                className="text-xs font-bold px-2.5 py-1 rounded-full capitalize"
-                                style={{
-                                    background:
-                                        statusStyle[modal.status]?.bg ??
-                                        "#f3f4f6",
-                                    color:
-                                        statusStyle[modal.status]?.color ??
-                                        "#6b7280",
-                                }}
-                            >
-                                {modal.status}
-                            </span>
-                        </div>
-                        <div className="grid grid-cols-2">
-                            {/* Left — client info */}
-                            <div className="px-5 py-4 border-r border-gray-100">
-                                <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">
-                                    Client information
-                                </p>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div
-                                        className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                                        style={{
-                                            background: getAvatarColor(
-                                                modal.name,
-                                            ).bg,
-                                            color: getAvatarColor(modal.name)
-                                                .color,
-                                        }}
-                                    >
-                                        {getInitials(modal.name)}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-gray-800">
-                                            {modal.name}
-                                        </p>
-                                        <p className="text-xs text-gray-400">
-                                            {modal.email}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    {[
-                                        { label: "Phone", value: modal.phone },
-                                        {
-                                            label: "Service",
-                                            value: modal.service_type,
-                                        },
-                                        {
-                                            label: "Preferred date",
-                                            value: modal.preferred_date,
-                                        },
-                                        {
-                                            label: "Preferred time",
-                                            value: modal.preferred_time,
-                                        },
-                                        {
-                                            label: "Type",
-                                            value: modal.consultation_type,
-                                        },
-                                    ].map(({ label, value }) => (
-                                        <div
-                                            key={label}
-                                            className="flex gap-3 text-xs py-1.5 border-b border-gray-50"
-                                        >
-                                            <span className="text-gray-400 flex-shrink-0 w-24">
-                                                {label}
-                                            </span>
-                                            <span
-                                                className="text-gray-700 font-medium"
-                                                style={{
-                                                    wordBreak: "break-word",
-                                                }}
-                                            >
-                                                {value}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                                {modal.message && (
-                                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                                        <p className="text-xs text-gray-400 mb-1">
-                                            Message
-                                        </p>
-                                        <p className="text-xs text-gray-600 leading-relaxed">
-                                            {modal.message}
-                                        </p>
-                                    </div>
-                                )}
-                                {modal.confirmed_date && (
-                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                                        <p className="text-xs text-gray-400 mb-1">
-                                            Scheduled
-                                        </p>
-                                        <p className="text-xs text-blue-700 font-bold">
-                                            {modal.confirmed_date} at{" "}
-                                            {modal.confirmed_time}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                            {/* Right — admin action */}
-                            <div className="px-5 py-4">
-                                <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">
-                                    Admin action
-                                </p>
-                                <div className="flex gap-1.5 mb-4">
-                                    {[
-                                        {
-                                            key: "confirm",
-                                            label: "Confirm",
-                                            bg: "#dcfce7",
-                                            color: "#166534",
-                                        },
-                                        {
-                                            key: "reschedule",
-                                            label: "Reschedule",
-                                            bg: "#dbeafe",
-                                            color: "#1e40af",
-                                        },
-                                        {
-                                            key: "cancel",
-                                            label: "Cancel",
-                                            bg: "#fee2e2",
-                                            color: "#991b1b",
-                                        },
-                                    ].map(({ key, label, bg, color }) => (
-                                        <button
-                                            key={key}
-                                            onClick={() => setAction(key)}
-                                            style={{
-                                                flex: 1,
-                                                padding: "6px 4px",
-                                                fontSize: "11px",
-                                                fontWeight: 600,
-                                                borderRadius: "8px",
-                                                border:
-                                                    action === key
-                                                        ? `1.5px solid ${color}`
-                                                        : "1px solid #e5e7eb",
-                                                background:
-                                                    action === key
-                                                        ? bg
-                                                        : "transparent",
-                                                color:
-                                                    action === key
-                                                        ? color
-                                                        : "#9ca3af",
-                                                cursor: "pointer",
-                                                transition: "all 0.15s",
-                                            }}
-                                        >
-                                            {label}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="space-y-3">
-                                    {(action === "confirm" ||
-                                        action === "reschedule") && (
-                                        <>
-                                            <div>
-                                                <label className="block text-xs text-gray-500 mb-1">
-                                                    Confirmed date
-                                                </label>
-                                                <input
-                                                    type="date"
-                                                    value={form.confirmed_date}
-                                                    onChange={(e) =>
-                                                        setForm({
-                                                            ...form,
-                                                            confirmed_date:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-green-500"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs text-gray-500 mb-1">
-                                                    Confirmed time
-                                                </label>
-                                                <select
-                                                    value={form.confirmed_time}
-                                                    onChange={(e) =>
-                                                        setForm({
-                                                            ...form,
-                                                            confirmed_time:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-green-500"
-                                                >
-                                                    <option value="">
-                                                        -- Select time --
-                                                    </option>
-                                                    {timeSlots.map((t) => (
-                                                        <option
-                                                            key={t}
-                                                            value={t}
-                                                        >
-                                                            {t}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </>
-                                    )}
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">
-                                            {action === "cancel"
-                                                ? "Reason for cancellation"
-                                                : "Note to client"}{" "}
-                                            (optional)
-                                        </label>
-                                        <textarea
-                                            value={form.admin_response}
-                                            onChange={(e) =>
-                                                setForm({
-                                                    ...form,
-                                                    admin_response:
-                                                        e.target.value,
-                                                })
-                                            }
-                                            rows={action === "cancel" ? 5 : 3}
-                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-green-500 resize-none"
-                                            placeholder="Add a note..."
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={submitAction}
-                                        disabled={submitting}
-                                        style={{
-                                            width: "100%",
-                                            padding: "9px",
-                                            fontSize: "12px",
-                                            fontWeight: 600,
-                                            borderRadius: "8px",
-                                            border: "none",
-                                            cursor: submitting
-                                                ? "not-allowed"
-                                                : "pointer",
-                                            opacity: submitting ? 0.6 : 1,
-                                            background:
-                                                action === "confirm"
-                                                    ? "#15803d"
-                                                    : action === "reschedule"
-                                                      ? "#1d4ed8"
-                                                      : "#dc2626",
-                                            color: "white",
-                                            transition: "all 0.15s",
-                                        }}
-                                    >
-                                        {submitting
-                                            ? "Saving..."
-                                            : action === "confirm"
-                                              ? "Confirm booking"
-                                              : action === "reschedule"
-                                                ? "Reschedule booking"
-                                                : "Cancel booking"}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="px-5 py-3 border-t border-gray-100 flex justify-end">
-                            <button
-                                onClick={closeModal}
-                                className="text-xs text-gray-400 border border-gray-200 px-4 py-1.5 rounded-lg hover:bg-gray-50 transition"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </AdminLayout>
     );
 }
