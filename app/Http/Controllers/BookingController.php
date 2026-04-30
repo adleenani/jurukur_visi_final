@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Queue;
 
 // Controller for managing consultation bookings (PIC).
 class BookingController extends Controller
@@ -99,7 +100,7 @@ class BookingController extends Controller
                 "Jurukur Visi Sdn Bhd\n" .
                 "Tel: +603-6038 8523\n" .
                 "Fax: +603-6038 8524\n" .
-                "Email: jvisi95@gmail.com \n" .
+                "Email: info@jurukurvisi.com\n" .
                 "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
                 function ($message) use ($booking) {
 
@@ -157,7 +158,7 @@ class BookingController extends Controller
                 "Jurukur Visi Sdn Bhd\n" .
                 "Tel: +603-6038 8523\n" .
                 "Fax: +603-6038 8524\n" .
-                "Email: jvisi95@gmail.com \n" .
+                "Email: info@jurukurvisi.com\n" .
                 "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
                 function ($message) use ($booking) {
 
@@ -205,7 +206,7 @@ class BookingController extends Controller
                 "Jurukur Visi Sdn Bhd\n" .
                 "Tel: +603-6038 8523\n" .
                 "Fax: +603-6038 8524\n" .
-                "Email: jvisi95@gmail.com \n" .
+                "Email: info@jurukurvisi.com\n" .
                 "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
                 function ($message) use ($booking) {
 

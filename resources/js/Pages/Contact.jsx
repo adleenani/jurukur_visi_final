@@ -200,7 +200,7 @@ export default function Contact() {
                         display:"flex", gap:10, flexWrap:"wrap", marginTop:20 }}>
                         {[
                             { icon:"📍", text:"Sungai Buloh, Selangor" },
-                            { icon:"📞", text:"+603 1234 5678" },
+                            { icon:"📞", text:"+03-6038 8523" },
                             { icon:"✉️", text:"info@jurukurvisi.com" },
                             { icon:"🕐", text:"Mon–Fri, 9am–5pm" },
                         ].map(({ icon, text }) => (

@@ -3,6 +3,7 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import ToastContainer from "../Components/ToastContainer";
+import InactivityTimer from '../Components/InactivityTimer';
 
 export default function AdminLayout({ children }) {
     const { auth } = usePage().props;
@@ -15,6 +16,7 @@ export default function AdminLayout({ children }) {
     // Desktop: sidebar always visible, Mobile: hidden until hamburger clicked
     return (
         <div className="min-h-screen bg-gray-50 flex">
+            <InactivityTimer />
             {/* Mobile overlay */}
             {sidebarOpen && (
                 <div

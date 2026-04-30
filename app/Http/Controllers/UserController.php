@@ -85,7 +85,7 @@ class UserController extends Controller
     }
 
     // Activate a user.
-    public function approve($id)
+    public function approve(string $id)
     {
         // Find user by ID and set is_active to true
         $user = User::findOrFail($id);
@@ -96,9 +96,13 @@ class UserController extends Controller
     }
 
     // Deactivate a user.
-    public function reject($id)
+    public function reject(string $id)
     {
-        // Find user by ID and set is_active to false
+        if (session('user_id') == $id) {
+            return redirect()->route('admin.users')
+                ->with('error', 'Action cannot be done. You cannot deactivate your own account.');
+        }
+
         $user = User::findOrFail($id);
         $user->update(['is_active' => false]);
 
@@ -107,7 +111,7 @@ class UserController extends Controller
     }
 
     // Reset user password.
-    public function resetPassword(Request $request, $id)
+    public function resetPassword(Request $request, string $id)
     {
         // Validate input with strong rules
         $request->validate([
@@ -130,8 +134,14 @@ class UserController extends Controller
     }
 
     // Delete a user.
-    public function destroy($id)
+    public function destroy(string $id)
     {
+        // Prevent deleting your own account
+        if (session('user_id') == $id) {
+            return redirect()->route('admin.users')
+                ->with('error', 'Action cannot be done. This account is currently logged in.');
+        }
+
         $user = User::findOrFail($id);
         $name = $user->full_name;
         $user->delete();

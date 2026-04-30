@@ -20,7 +20,7 @@ const services = [
         color: "#dbeafe",
         accent: "#1e40af",
     },
-    {
+    {                                
         icon: "🏗️",
         title: "Engineering Survey",
         color: "#fef9c3",
@@ -65,7 +65,7 @@ const workImages = [
 
 const contactInfo = [
     { icon: "📍", label: "Address", value: "Sungai Buloh, Selangor, Malaysia" },
-    { icon: "📞", label: "Phone", value: "+603 1234 5678" },
+    { icon: "📞", label: "Phone", value: "+03-6038 8523" },
     { icon: "✉️", label: "Email", value: "info@jurukurvisi.com" },
     { icon: "🕐", label: "Hours", value: "Mon–Fri, 9am–5pm" },
 ];
@@ -1337,7 +1337,7 @@ export default function Home() {
                         <p className="text-white font-medium mb-3">Contact</p>
                         <div className="space-y-2 text-sm">
                             <p>📍 Sungai Buloh, Selangor</p>
-                            <p>📞 +603 1234 5678</p>
+                            <p>📞 +03-6038 85238</p>
                             <p>✉️ info@jurukurvisi.com</p>
                         </div>
                     </div>
