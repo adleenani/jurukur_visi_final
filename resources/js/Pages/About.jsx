@@ -327,24 +327,24 @@ const services = [
 
 const equipment = [
     {
-        img: "/images/visi7.jpg",
+        img: "/images/equipment_1.jpg",
         name: "Total Station",
         desc: "Electronic theodolite for angle & distance measurement",
     },
     {
-        img: "/images/visi8.jpg",
+        img: "/images/equipment_2.jpg",
+        name: "GPR Equipment",
+        desc: "Ground penetrating radar for utility detection",
+    },
+    {
+        img: "/images/equipment_3.jpg",
         name: "GNSS Receiver",
         desc: "High-precision GPS positioning equipment",
     },
     {
-        img: "/images/visi9.jpg",
+        img: "/images/equipment_4.jpg",
         name: "Drone / UAV",
         desc: "Aerial mapping and photogrammetry surveys",
-    },
-    {
-        img: "/images/visi10.jpg",
-        name: "GPR Equipment",
-        desc: "Ground penetrating radar for utility detection",
     },
 ];
 
@@ -1084,9 +1084,7 @@ export default function About({ stats }) {
                     {/* ── COLLABORATIONS ── */}
                     <div>
                         <Reveal>
-                            <SectionTitle>
-                                Clients
-                            </SectionTitle>
+                            <SectionTitle>Clients</SectionTitle>
                         </Reveal>
                         <div className="grid md:grid-cols-4 gap-5">
                             {collaborations.map(
