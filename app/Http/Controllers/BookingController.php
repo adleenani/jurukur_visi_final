@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Queue;
 
 // Controller for managing consultation bookings (PIC).
 class BookingController extends Controller
@@ -53,6 +52,69 @@ class BookingController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'service_type' => 'required|string',
+            'preferred_date' => 'required|date',
+            'consultation_type' => 'required|in:online,in-person',
+            'message' => 'nullable|string|max:1000',
+        ]);
+
+        $booking = ConsultationBooking::create([
+            'reference_number' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'service_type' => $request->service_type,
+            'preferred_date' => $request->preferred_date,
+            'preferred_time' => null,
+            'consultation_type' => $request->consultation_type,
+            'message' => $request->message,
+            'status' => 'pending',
+        ]);
+
+        // Send acknowledgement email to client
+        try {
+            Mail::raw(
+                "Dear {$booking->name},\n\n" .
+                "Thank you for reaching out to Jurukur Visi Sdn Bhd. We have received your consultation request and will get back to you within 1–2 business days.\n\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "YOUR BOOKING DETAILS\n" .
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "Reference No   : {$booking->reference_number}\n" .
+                "Service        : {$booking->service_type}\n" .
+                "Preferred Date : {$booking->preferred_date}\n" .
+                "Type           : {$booking->consultation_type}\n" .
+                ($booking->message ? "\nYour Message:\n{$booking->message}\n" : '') .
+                "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" .
+                "Please keep your reference number safe — you can use it to check your booking status anytime on our website.\n\n" .
+                "If you have any questions, feel free to contact us.\n\n" .
+                "Best regards,\n" .
+                "Jurukur Visi Sdn Bhd\n" .
+                "Tel: +03-6038 8523\n" .
+                "Fax: +03-6038 8524\n" .
+                "Email: info@jurukurvisi.com\n" .
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.". 
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "This is an automated email. Please do not reply to this email.\n" .
+                "This mailbox is not monitored and you will not receive a response.\n" .
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+                function ($message) use ($booking) {
+                    $message->to($booking->email, $booking->name)
+                        ->subject('Booking Received — Jurukur Visi Sdn Bhd');
+                }
+            );
+        } catch (\Exception $e) {
+            Log::error('Booking submission email failed: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Your booking request has been submitted! Please check your email for your reference number.');
+    }
+
     // Show details of a specific booking.
     public function show(string $reference_number)
     {
@@ -65,7 +127,7 @@ class BookingController extends Controller
     {
         $request->validate([
             'confirmed_date' => 'required|date',
-            'confirmed_time' => 'required',
+            'confirmed_time' => 'nullable|string',
             'admin_response' => 'nullable|max:500',
         ]);
 
@@ -87,21 +149,28 @@ class BookingController extends Controller
                 "APPOINTMENT DETAILS\n" .
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
                 "Reference No : {$booking->reference_number}\n" .
+                "Name         : {$booking->name}\n" .
+                "Company      : " . ($booking->company_name ?? 'N/A') . "\n" .
                 "Service      : {$booking->service_type}\n" .
                 "Date         : {$request->confirmed_date}\n" .
                 "Time         : {$request->confirmed_time}\n" .
                 "Type         : {$booking->consultation_type}\n" .
                 ($request->admin_response ? "\nNote from our team:\n{$request->admin_response}\n" : '') .
                 "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" .
-                "Please arrive on time. If you need to reschedule, contact us as soon as possible.\n\n" .
+                "We will contact you back in 1 - 2 business days. If you need to reschedule, contact us as soon as possible via Tel: +603-6038 8523.\n\n" .
                 "You can check your booking status anytime at our website using your reference number.\n\n" .
                 "Thank you for choosing Jurukur Visi Sdn Bhd.\n\n" .
                 "Best regards,\n" .
                 "Jurukur Visi Sdn Bhd\n" .
-                "Tel: +603-6038 8523\n" .
-                "Fax: +603-6038 8524\n" .
+                "Tel: +03-6038 8523\n" .
+                "Fax: +03-6038 8524\n" .
                 "Email: info@jurukurvisi.com\n" .
-                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor." .
+                "Sungai Buloh, Selangor, Malaysia\n\n" .
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "This is an automated email. Please do not reply to this email.\n" .
+                "This mailbox is not monitored and you will not receive a response.\n" .
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
                 function ($message) use ($booking) {
 
                     // Set the recipient and subject of the confirmation email.
@@ -144,7 +213,9 @@ class BookingController extends Controller
                 "UPDATED APPOINTMENT DETAILS\n" .
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
                 "Reference No  : {$booking->reference_number}\n" .
-                "Service       : {$booking->service_type}\n" .
+                "Name         : {$booking->name}\n" .
+                "Company      : " . ($booking->company_name ?? 'N/A') . "\n" .
+                "Service      : {$booking->service_type}\n" .
                 "New Date      : {$request->confirmed_date}\n" .
                 "New Time      : {$request->confirmed_time}\n" .
                 "Type          : {$booking->consultation_type}\n" .
@@ -156,10 +227,15 @@ class BookingController extends Controller
                 "Thank you for your understanding.\n\n" .
                 "Best regards,\n" .
                 "Jurukur Visi Sdn Bhd\n" .
-                "Tel: +603-6038 8523\n" .
-                "Fax: +603-6038 8524\n" .
+                "Tel: +03-6038 8523\n" .
+                "Fax: +03-6038 8524\n" .
                 "Email: info@jurukurvisi.com\n" .
-                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor." .
+                "Sungai Buloh, Selangor, Malaysia\n\n" .
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "This is an automated email. Please do not reply to this email.\n" .
+                "This mailbox is not monitored and you will not receive a response.\n" .
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
                 function ($message) use ($booking) {
 
                     // Set the recipient and subject of the reschedule email.
@@ -194,6 +270,8 @@ class BookingController extends Controller
                 "CANCELLED BOOKING DETAILS\n" .
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
                 "Reference No : {$booking->reference_number}\n" .
+                "Name         : {$booking->name}\n" .
+                "Company      : " . ($booking->company_name ?? 'N/A') . "\n" .
                 "Service      : {$booking->service_type}\n" .
                 "Preferred Date : {$booking->preferred_date}\n" .
                 "Preferred Time : {$booking->preferred_time}\n" .
@@ -204,15 +282,20 @@ class BookingController extends Controller
                 "Thank you for your understanding.\n\n" .
                 "Best regards,\n" .
                 "Jurukur Visi Sdn Bhd\n" .
-                "Tel: +603-6038 8523\n" .
-                "Fax: +603-6038 8524\n" .
+                "Tel: +03-6038 8523\n" .
+                "Fax: +03-6038 8524\n" .
                 "Email: info@jurukurvisi.com\n" .
-                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.",
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor." .
+                "Sungai Buloh, Selangor, Malaysia\n\n" .
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
+                "This is an automated email. Please do not reply to this email.\n" .
+                "This mailbox is not monitored and you will not receive a response.\n" .
+                "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
                 function ($message) use ($booking) {
 
                     // Set the recipient and subject of the cancellation email.
                     $message->to($booking->email, $booking->name)
-                        ->subject('✕ Booking Cancelled — Jurukur Visi Sdn Bhd');
+                        ->subject('Booking Cancelled — Jurukur Visi Sdn Bhd');
                 }
             );
         } catch (\Exception $e) {

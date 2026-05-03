@@ -164,7 +164,7 @@ export default function Show({ booking }) {
                             marginBottom: 4,
                         }}
                     >
-                        Admin Panel · Bookings
+                        PIC Panel · Bookings
                     </p>
                     <h1
                         style={{
@@ -322,6 +322,10 @@ export default function Show({ booking }) {
                             </div>
                             <DetailRow label="Phone" value={booking.phone} />
                             <DetailRow
+                                label="Company"
+                                value={booking.company_name ?? "—"}
+                            />
+                            <DetailRow
                                 label="Service"
                                 value={booking.service_type}
                             />
@@ -334,10 +338,6 @@ export default function Show({ booking }) {
                                           ).toLocaleDateString("en-GB")
                                         : null
                                 }
-                            />
-                            <DetailRow
-                                label="Preferred Time"
-                                value={booking.preferred_time}
                             />
                             <DetailRow
                                 label="Consultation Type"

@@ -126,7 +126,7 @@ export default function Edit({ project }) {
                             marginBottom: 4,
                         }}
                     >
-                        Admin Panel · Projects
+                        PIC Panel · Projects
                     </p>
                     <h1
                         style={{

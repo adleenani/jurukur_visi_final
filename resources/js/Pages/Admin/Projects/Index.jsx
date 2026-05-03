@@ -58,7 +58,7 @@ export default function Index({ projects, filters }) {
                 animation:"fadeUp 0.5s cubic-bezier(.22,1,.36,1) both" }}>
                 <div>
                     <p style={{ fontSize:11, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>
-                        Admin Panel
+                        PIC Panel
                     </p>
                     <h1 style={{ fontSize:24, fontWeight:800, color:"#111827", marginBottom:2 }}>Projects</h1>
                     <p style={{ fontSize:13, color:"#6b7280" }}>

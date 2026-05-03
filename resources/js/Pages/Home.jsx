@@ -680,7 +680,7 @@ export default function Home() {
                         }}
                     >
                         <div className="inline-block bg-green-900 bg-opacity-60 text-green-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6 tracking-wide uppercase">
-                            Bumiputera Surveying Consultancy · Est. 2005
+                            Bumiputera Surveying Consultancy · Est. 2011
                         </div>
                     </div>
 
@@ -730,7 +730,7 @@ export default function Home() {
                         <p className="text-green-100 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
                             Jurukur Visi Sdn Bhd delivers precision surveying
                             solutions across Malaysia, trusted by government and
-                            private sector clients for over 12 years.
+                            private sector clients for over 15 years.
                         </p>
                     </div>
 
@@ -1337,7 +1337,7 @@ export default function Home() {
                         <p className="text-white font-medium mb-3">Contact</p>
                         <div className="space-y-2 text-sm">
                             <p>📍 Sungai Buloh, Selangor</p>
-                            <p>📞 +03-6038 85238</p>
+                            <p>📞 +03-6038 8523</p>
                             <p>✉️ info@jurukurvisi.com</p>
                         </div>
                     </div>

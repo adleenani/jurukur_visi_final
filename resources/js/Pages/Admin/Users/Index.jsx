@@ -150,7 +150,7 @@ export default function Index({ users, stats, filters }) {
                             marginBottom: 4,
                         }}
                     >
-                        Admin Panel
+                        PIC Panel
                     </p>
                     <h1
                         style={{

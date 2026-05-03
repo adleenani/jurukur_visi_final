@@ -10,6 +10,7 @@ class ConsultationBooking extends Model
     protected $fillable = [
         'reference_number',
         'name',
+        'company_name',
         'email',
         'phone',
         'service_type',

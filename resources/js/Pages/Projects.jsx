@@ -35,19 +35,25 @@ function Reveal({ children, delay = 0, className = "" }) {
 }
 
 /* ─────────────────────────────────────────────
-   SERVICE TAG
+   TAG COLOR HELPER
 ───────────────────────────────────────────── */
-function ServiceTag({ label }) {
-    const colors = [
-        { bg: "#d1fae5", color: "#065f46" },
-        { bg: "#dbeafe", color: "#1e40af" },
-        { bg: "#fef9c3", color: "#854d0e" },
-        { bg: "#ede9fe", color: "#6d28d9" },
-        { bg: "#cffafe", color: "#155e75" },
-        { bg: "#ffedd5", color: "#9a3412" },
+const tagColors = [
+    { bg: "#d1fae5", color: "#065f46" },
+    { bg: "#dbeafe", color: "#1e40af" },
+    { bg: "#fef9c3", color: "#854d0e" },
+    { bg: "#ede9fe", color: "#6d28d9" },
+    { bg: "#cffafe", color: "#155e75" },
+    { bg: "#ffedd5", color: "#9a3412" },
+];
+
+function getTagColor(label) {
+    return tagColors[
+        Math.abs(label.charCodeAt(0) + label.length) % tagColors.length
     ];
-    const pick =
-        colors[Math.abs(label.charCodeAt(0) + label.length) % colors.length];
+}
+
+function ServiceTag({ label }) {
+    const pick = getTagColor(label);
     return (
         <span
             style={{
@@ -62,6 +68,52 @@ function ServiceTag({ label }) {
         >
             {label}
         </span>
+    );
+}
+
+/* ─────────────────────────────────────────────
+   FILTER TAB
+───────────────────────────────────────────── */
+function FilterTab({ label, count, active, color, onClick }) {
+    return (
+        <button
+            onClick={onClick}
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 16px",
+                borderRadius: 99,
+                border: `1.5px solid ${active ? color : "rgba(255,255,255,0.18)"}`,
+                background: active
+                    ? "rgba(255,255,255,0.95)"
+                    : "rgba(255,255,255,0.07)",
+                cursor: "pointer",
+                transition: "all 0.25s ease",
+                transform: active ? "scale(1.04)" : "scale(1)",
+                whiteSpace: "nowrap",
+            }}
+        >
+            <span
+                style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: active ? color : "#fff",
+                }}
+            >
+                {count}
+            </span>
+            <span
+                style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: active ? color : "rgba(255,255,255,0.7)",
+                    letterSpacing: "0.02em",
+                }}
+            >
+                {label}
+            </span>
+        </button>
     );
 }
 
@@ -104,7 +156,7 @@ function ProjectCard({ project, index }) {
                     e.currentTarget.style.borderColor = "#e5e7eb";
                 }}
             >
-                {/* ── LEFT: Image ── */}
+                {/* LEFT: Image */}
                 <div
                     style={{
                         position: "relative",
@@ -165,43 +217,9 @@ function ProjectCard({ project, index }) {
                             </span>
                         </div>
                     )}
-
-                    {/* Status badge */}
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 12,
-                            left: 12,
-                            background: isActive ? "#4ade80" : "#e5e7eb",
-                            color: isActive ? "#052e16" : "#6b7280",
-                            fontSize: 10,
-                            fontWeight: 700,
-                            padding: "4px 10px",
-                            borderRadius: 99,
-                            letterSpacing: "0.08em",
-                            textTransform: "uppercase",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 5,
-                        }}
-                    >
-                        <span
-                            style={{
-                                width: 6,
-                                height: 6,
-                                borderRadius: "50%",
-                                background: isActive ? "#166534" : "#9ca3af",
-                                display: "inline-block",
-                                animation: isActive
-                                    ? "glowPulse 2s ease infinite"
-                                    : "none",
-                            }}
-                        />
-                        {isActive ? "Active" : "Completed"}
-                    </div>
                 </div>
 
-                {/* ── RIGHT: Info ── */}
+                {/* RIGHT: Info */}
                 <div
                     style={{
                         padding: "22px 24px",
@@ -234,8 +252,25 @@ function ProjectCard({ project, index }) {
                                 {project.client_name}
                             </p>
                         )}
-                    </div>
 
+                        {/* Description */}
+                        {project.project_description && (
+                            <p
+                                style={{
+                                    fontSize: 12,
+                                    color: "#6b7280",
+                                    lineHeight: 1.7,
+                                    marginTop: 6,
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                }}
+                            >
+                                {project.project_description}
+                            </p>
+                        )}
+                    </div>
                     <div
                         style={{
                             display: "flex",
@@ -247,7 +282,10 @@ function ProjectCard({ project, index }) {
                             { icon: "📍", text: project.project_location },
                             {
                                 icon: "📅",
-                                text: `${project.project_start} — ${project.project_end}`,
+                                text:
+                                    project.project_start && project.project_end
+                                        ? `${new Date(project.project_start).toLocaleDateString("en-GB")} — ${new Date(project.project_end).toLocaleDateString("en-GB")}`
+                                        : null,
                             },
                             { icon: "⏱", text: project.project_duration },
                         ]
@@ -277,7 +315,6 @@ function ProjectCard({ project, index }) {
                                 </div>
                             ))}
                     </div>
-
                     {serviceList.length > 0 && (
                         <div
                             style={{
@@ -298,70 +335,45 @@ function ProjectCard({ project, index }) {
 }
 
 /* ─────────────────────────────────────────────
-   STAT PILL / FILTER TAB
-───────────────────────────────────────────── */
-function StatPill({ label, value, color, bg, active, onClick }) {
-    return (
-        <button
-            onClick={onClick}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "10px 20px",
-                borderRadius: 99,
-                border: `1.5px solid ${active ? color : "rgba(255,255,255,0.2)"}`,
-                background: active ? bg : "rgba(255,255,255,0.08)",
-                cursor: "pointer",
-                transition: "all 0.25s ease",
-                transform: active ? "scale(1.04)" : "scale(1)",
-            }}
-        >
-            <span
-                style={{
-                    fontSize: 22,
-                    fontWeight: 800,
-                    color: active ? color : "#fff",
-                }}
-            >
-                {value}
-            </span>
-            <span
-                style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: active ? color : "rgba(255,255,255,0.7)",
-                    letterSpacing: "0.04em",
-                }}
-            >
-                {label}
-            </span>
-        </button>
-    );
-}
-
-/* ─────────────────────────────────────────────
    MAIN
 ───────────────────────────────────────────── */
 export default function Projects({ projects }) {
     const [filter, setFilter] = useState("all");
 
-    const total = projects.length;
-    const completed = projects.filter((p) => p.status === "completed").length;
-    const active = projects.filter((p) => p.status === "active").length;
+    // Derive unique services + their project counts dynamically
+    const serviceMap = {};
+    projects.forEach((p) => {
+        if (!p.project_services) return;
+        p.project_services
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .forEach((s) => {
+                serviceMap[s] = (serviceMap[s] ?? 0) + 1;
+            });
+    });
 
+    // Sort by count descending so most common services appear first
+    const uniqueServices = Object.entries(serviceMap)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => ({ name, count }));
+
+    // Filter projects by selected service
     const filtered =
         filter === "all"
             ? projects
-            : filter === "active"
-              ? projects.filter((p) => p.status === "active")
-              : projects.filter((p) => p.status === "completed");
+            : projects.filter((p) =>
+                  p.project_services
+                      ?.split(",")
+                      .map((s) => s.trim())
+                      .includes(filter),
+              );
 
     return (
         <PublicLayout>
             <style>{`
-                @keyframes glowPulse  { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0)} }
-                @keyframes gradShift  { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+                @keyframes glowPulse { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0)} }
+                @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
             `}</style>
 
             <div className="min-h-screen" style={{ background: "#f8fafb" }}>
@@ -432,12 +444,88 @@ export default function Projects({ projects }) {
                             style={{
                                 color: "#6ee7b7",
                                 fontSize: 14,
-                                marginBottom: 28,
+                                marginBottom: 24,
                             }}
                         >
                             Surveying and mapping projects completed across
                             Malaysia.
                         </p>
+
+                        {/* ── DYNAMIC SERVICE FILTER TABS ── */}
+                        <div
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 8,
+                            }}
+                        >
+                            {/* All tab */}
+                            <FilterTab
+                                label="All Projects"
+                                count={projects.length}
+                                active={filter === "all"}
+                                color="#065f46"
+                                onClick={() => setFilter("all")}
+                            />
+                            {/* One tab per unique service, sorted by count */}
+                            {uniqueServices.map(({ name, count }) => (
+                                <FilterTab
+                                    key={name}
+                                    label={name}
+                                    count={count}
+                                    active={filter === name}
+                                    color={getTagColor(name).color}
+                                    onClick={() =>
+                                        setFilter(
+                                            filter === name ? "all" : name,
+                                        )
+                                    }
+                                />
+                            ))}
+                        </div>
+
+                        {/* Active filter info line */}
+                        {filter !== "all" && (
+                            <p
+                                style={{
+                                    fontSize: 12,
+                                    color: "rgba(255,255,255,0.5)",
+                                    marginTop: 14,
+                                }}
+                            >
+                                Showing{" "}
+                                <span
+                                    style={{
+                                        color: "#4ade80",
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    {filtered.length}
+                                </span>{" "}
+                                project{filtered.length !== 1 ? "s" : ""} for{" "}
+                                <span
+                                    style={{ color: "#fff", fontWeight: 600 }}
+                                >
+                                    "{filter}"
+                                </span>
+                                {" · "}
+                                <button
+                                    onClick={() => setFilter("all")}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "#6ee7b7",
+                                        cursor: "pointer",
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                        padding: 0,
+                                        textDecoration: "underline",
+                                    }}
+                                >
+                                    Clear filter
+                                </button>
+                            </p>
+                        )}
                     </div>
                 </div>
 
@@ -455,10 +543,23 @@ export default function Projects({ projects }) {
                                 📂
                             </div>
                             <p style={{ fontWeight: 600 }}>
-                                No projects in this category yet.
+                                No projects found for this service.
                             </p>
-                            <p style={{ fontSize: 13, marginTop: 4 }}>
-                                Check back soon.
+                            <p style={{ fontSize: 13, marginTop: 8 }}>
+                                <button
+                                    onClick={() => setFilter("all")}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "#065f46",
+                                        cursor: "pointer",
+                                        fontSize: 13,
+                                        fontWeight: 700,
+                                        textDecoration: "underline",
+                                    }}
+                                >
+                                    View all projects
+                                </button>
                             </p>
                         </div>
                     ) : (

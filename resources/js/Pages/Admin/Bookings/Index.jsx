@@ -208,7 +208,7 @@ export default function Index({ bookings, stats, filters }) {
                             marginBottom: 4,
                         }}
                     >
-                        Admin Panel
+                        PIC Panel
                     </p>
                     <h1
                         style={{
@@ -552,6 +552,25 @@ export default function Index({ bookings, stats, filters }) {
                                                     >
                                                         {booking.name}
                                                     </p>
+                                                    {booking.company_name && (
+                                                        <p
+                                                            style={{
+                                                                fontSize: 10,
+                                                                color: "#6b7280",
+                                                                overflow:
+                                                                    "hidden",
+                                                                textOverflow:
+                                                                    "ellipsis",
+                                                                whiteSpace:
+                                                                    "nowrap",
+                                                            }}
+                                                        >
+                                                            🏢{" "}
+                                                            {
+                                                                booking.company_name
+                                                            }
+                                                        </p>
+                                                    )}
                                                     <p
                                                         style={{
                                                             fontSize: 10,
@@ -596,17 +615,6 @@ export default function Index({ bookings, stats, filters }) {
                                                       booking.preferred_date,
                                                   ).toLocaleDateString("en-GB")
                                                 : "—"}
-                                        </td>
-
-                                        {/* Time */}
-                                        <td
-                                            style={{
-                                                padding: "12px 14px",
-                                                fontSize: 11,
-                                                color: "#374151",
-                                            }}
-                                        >
-                                            {booking.preferred_time ?? "—"}
                                         </td>
 
                                         {/* Type */}

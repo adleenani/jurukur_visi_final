@@ -1,40 +1,36 @@
-// The About component renders the "About Us" page for Jurukur Visi, showcasing the company's mission, services, team, equipment, collaborations and certifications.
+// The About component renders the "About Us" page for Jurukur Visi Sdn Bhd.
 
 import PublicLayout from "../Layouts/PublicLayout";
 import { Link } from "@inertiajs/react";
 import { useEffect, useRef, useState, useCallback } from "react";
 
 /* ─────────────────────────────────────────────
-   COUNTER — animated number count-up
+   COUNTER
 ───────────────────────────────────────────── */
 function Counter({ target, suffix = "" }) {
     const [count, setCount] = useState(0);
     const ref = useRef(null);
     const started = useRef(false);
-
     useEffect(() => {
         const observer = new IntersectionObserver(([entry]) => {
             if (entry.isIntersecting && !started.current) {
                 started.current = true;
                 let start = 0;
-                const duration = 1800;
-                const step = 16;
+                const duration = 1800,
+                    step = 16;
                 const increment = target / (duration / step);
                 const timer = setInterval(() => {
                     start += increment;
                     if (start >= target) {
                         setCount(target);
                         clearInterval(timer);
-                    } else {
-                        setCount(Math.floor(start));
-                    }
+                    } else setCount(Math.floor(start));
                 }, step);
             }
         });
         if (ref.current) observer.observe(ref.current);
         return () => observer.disconnect();
     }, [target]);
-
     return (
         <span ref={ref}>
             {count}
@@ -58,12 +54,11 @@ function SectionTitle({ children }) {
 }
 
 /* ─────────────────────────────────────────────
-   REVEAL ON SCROLL — wraps children with fade-in + slide-up
+   REVEAL
 ───────────────────────────────────────────── */
 function Reveal({ children, delay = 0, className = "" }) {
     const ref = useRef(null);
     const [visible, setVisible] = useState(false);
-
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
@@ -74,7 +69,6 @@ function Reveal({ children, delay = 0, className = "" }) {
         if (ref.current) observer.observe(ref.current);
         return () => observer.disconnect();
     }, []);
-
     return (
         <div
             ref={ref}
@@ -91,13 +85,12 @@ function Reveal({ children, delay = 0, className = "" }) {
 }
 
 /* ─────────────────────────────────────────────
-   TILT CARD — 3D tilt on mouse move
+   TILT CARD
 ───────────────────────────────────────────── */
 function TiltCard({ children, className = "", style = {} }) {
     const ref = useRef(null);
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
     const [hovered, setHovered] = useState(false);
-
     const handleMouseMove = useCallback((e) => {
         const el = ref.current;
         if (!el) return;
@@ -108,12 +101,10 @@ function TiltCard({ children, className = "", style = {} }) {
         const dy = (e.clientY - cy) / (rect.height / 2);
         setTilt({ x: dy * -8, y: dx * 8 });
     }, []);
-
     const handleMouseLeave = useCallback(() => {
         setTilt({ x: 0, y: 0 });
         setHovered(false);
     }, []);
-
     return (
         <div
             ref={ref}
@@ -136,24 +127,21 @@ function TiltCard({ children, className = "", style = {} }) {
 }
 
 /* ─────────────────────────────────────────────
-   PARTICLE CANVAS — floating dots & lines for hero
+   PARTICLE CANVAS
 ───────────────────────────────────────────── */
 function ParticleCanvas() {
     const canvasRef = useRef(null);
-
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
         let animId;
-
         const resize = () => {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
         };
         resize();
         window.addEventListener("resize", resize);
-
         const DOTS = 48;
         const dots = Array.from({ length: DOTS }, () => ({
             x: Math.random() * canvas.width,
@@ -162,15 +150,12 @@ function ParticleCanvas() {
             vy: (Math.random() - 0.5) * 0.4,
             r: Math.random() * 2 + 1,
         }));
-
         const draw = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // lines between nearby dots
             for (let i = 0; i < DOTS; i++) {
                 for (let j = i + 1; j < DOTS; j++) {
-                    const dx = dots[i].x - dots[j].x;
-                    const dy = dots[i].y - dots[j].y;
+                    const dx = dots[i].x - dots[j].x,
+                        dy = dots[i].y - dots[j].y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < 120) {
                         ctx.beginPath();
@@ -182,30 +167,24 @@ function ParticleCanvas() {
                     }
                 }
             }
-
-            // dots
             dots.forEach((d) => {
                 ctx.beginPath();
                 ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
                 ctx.fillStyle = "rgba(110,231,183,0.5)";
                 ctx.fill();
-
                 d.x += d.vx;
                 d.y += d.vy;
                 if (d.x < 0 || d.x > canvas.width) d.vx *= -1;
                 if (d.y < 0 || d.y > canvas.height) d.vy *= -1;
             });
-
             animId = requestAnimationFrame(draw);
         };
         draw();
-
         return () => {
             cancelAnimationFrame(animId);
             window.removeEventListener("resize", resize);
         };
     }, []);
-
     return (
         <canvas
             ref={canvasRef}
@@ -221,26 +200,21 @@ function ParticleCanvas() {
 }
 
 /* ─────────────────────────────────────────────
-   MAGNETIC BUTTON — cursor attraction effect
+   MAGNETIC BUTTON
 ───────────────────────────────────────────── */
 function MagneticBtn({ children, href, className = "" }) {
     const ref = useRef(null);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
-
     const handleMouseMove = (e) => {
         const el = ref.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
         setOffset({
-            x: (e.clientX - cx) * 0.3,
-            y: (e.clientY - cy) * 0.3,
+            x: (e.clientX - rect.left - rect.width / 2) * 0.3,
+            y: (e.clientY - rect.top - rect.height / 2) * 0.3,
         });
     };
-
     const handleMouseLeave = () => setOffset({ x: 0, y: 0 });
-
     return (
         <Link
             href={href}
@@ -263,7 +237,7 @@ function MagneticBtn({ children, href, className = "" }) {
 }
 
 /* ─────────────────────────────────────────────
-   PULSE RING — animated ring for stat numbers
+   PULSE RING
 ───────────────────────────────────────────── */
 function PulseRing() {
     return (
@@ -327,87 +301,183 @@ const services = [
 
 const equipment = [
     {
-        img: "/images/equipment_1.jpg",
+        img: "/images/equipments/total-station.jpg",
         name: "Total Station",
         desc: "Electronic theodolite for angle & distance measurement",
     },
     {
-        img: "/images/equipment_2.jpg",
+        img: "/images/equipments/gpr.jpg",
         name: "GPR Equipment",
         desc: "Ground penetrating radar for utility detection",
     },
     {
-        img: "/images/equipment_3.jpg",
+        img: "/images/equipments/gnss.jpg",
         name: "GNSS Receiver",
         desc: "High-precision GPS positioning equipment",
     },
     {
-        img: "/images/equipment_4.jpg",
+        img: "/images/equipments/drone.jpg",
         name: "Drone / UAV",
         desc: "Aerial mapping and photogrammetry surveys",
     },
+    {
+        img: "/images/equipments/focus-dl-15.jpg",
+        name: "Digital Level Focus DL-15",
+        desc: "High-precision digital levelling instrument for height measurement",
+    },
+    {
+        img: "/images/equipments/south-sde-28s.jpg",
+        name: "South SDE 28S",
+        desc: "Electronic digital level for precise surveying and levelling works",
+    },
+    {
+        img: "/images/equipments/nikon-dtm320.jpg",
+        name: "Nikon DTM-320",
+        desc: "Total station for angle and distance measurement in field surveys",
+    },
+    {
+        img: "/images/equipments/topcon-es-105.jpg",
+        name: "Topcon ES-105 Total Station",
+        desc: "High-accuracy total station for engineering and cadastral surveys",
+    },
 ];
+
+const sorted_equipments = equipment.sort((a, b) =>
+    a.name.localeCompare(b.name),
+);
 
 const collaborations = [
     {
+        name: "Air Selangor",
+        abbr: "AS",
+        type: "Water Utility",
+        localLogo: "/images/clients/airselangor.jpg",
+    },
+    {
+        name: "Dewan Bandaraya Kuala Lumpur",
+        abbr: "DBKL",
+        type: "Local Authority",
+        localLogo: "/images/clients/dbkl.png",
+    },
+    {
+        name: "FGV Palm Industries Sdn Bhd",
+        abbr: "FGV",
+        type: "Government-Linked",
+        localLogo: "/images/clients/fgv.png",
+    },
+    {
+        name: "Indah Water Konsortium",
+        abbr: "IWK",
+        type: "Government-Linked",
+        localLogo: "/images/clients/iwk.jpg",
+    },
+    {
+        name: "Jabatan Kerja Raya Malaysia",
         abbr: "JKR",
-        name: "Jabatan Kerja Raya",
         type: "Government Agency",
-        bg: "#dbeafe",
-        color: "#1e40af",
+        localLogo: "/images/clients/jkr.png",
     },
     {
-        abbr: "PTG",
-        name: "Pejabat Tanah & Galian",
-        type: "Land Office",
-        bg: "#d1fae5",
-        color: "#065f46",
+        name: "Jabatan Pengairan dan Saliran",
+        abbr: "JPS",
+        type: "Government Agency",
+        localLogo: "/images/clients/jps.png",
     },
     {
-        abbr: "PLN",
-        name: "Placeholder Developer",
-        type: "Private Developer",
-        bg: "#fef9c3",
-        color: "#854d0e",
+        name: "Kementerian Pertanian & Keterjaminan Makanan",
+        abbr: "KPKM",
+        type: "Government Ministry",
+        localLogo: "/images/clients/kpkm.png",
     },
     {
-        abbr: "ENG",
-        name: "Placeholder Engineering",
-        type: "Engineering Firm",
-        bg: "#ede9fe",
-        color: "#6d28d9",
+        name: "Kwasa Land Sdn Bhd",
+        abbr: "KL",
+        type: "Government-Linked",
+        localLogo: "/images/clients/kwasaland.jpg",
+    },
+    {
+        name: "Minconsult Sdn Bhd",
+        abbr: "MIN",
+        type: "Engineering Consultancy",
+        localLogo: "/images/clients/minconsult.png",
+    },
+    {
+        name: "Pelaburan Mara Berhad",
+        abbr: "MARA",
+        type: "Government Agency",
+        localLogo: "/images/clients/pelaburanmara.png",
+    },
+    {
+        name: "Pengurusan Air Selangor Sdn Bhd",
+        abbr: "PAS",
+        type: "Water Utility",
+        localLogo: "/images/clients/par.png",
+    },
+    {
+        name: "Pengurusan Aset Air Berhad",
+        abbr: "PAAB",
+        type: "Government-Linked",
+        localLogo: "/images/clients/paab.png",
+    },
+    {
+        name: "Permodalan Nasional Berhad",
+        abbr: "PNB",
+        type: "Government-Linked",
+        localLogo: "/images/clients/pnb.png",
+    },
+    {
+        name: "Prasarana Malaysia Berhad",
+        abbr: "PRAS",
+        type: "Government-Linked",
+        localLogo: "/images/clients/prasarana.png",
+    },
+    {
+        name: "Sime Darby Plantation Berhad",
+        abbr: "SDP",
+        type: "Public Listed Company",
+        localLogo: "/images/clients/simedarby.png",
+    },
+    {
+        name: "TH Properties Sdn Bhd",
+        abbr: "THP",
+        type: "Government-Linked",
+        localLogo: "/images/clients/thproperties.png",
     },
 ];
 
-const certifications = [
-    {
-        icon: "📋",
-        title: "SSM Registered",
-        sub: "Suruhanjaya Syarikat Malaysia",
-        bg: "#dbeafe",
-        color: "#1e40af",
-    },
-    {
-        icon: "⭐",
-        title: "Bumiputera Certified",
-        sub: "Lembaga Jurukur Tanah Malaysia (LJTM)",
-        bg: "#fef9c3",
-        color: "#854d0e",
-    },
-    {
-        icon: "🏢",
-        title: "MOF Registered",
-        sub: "Ministry of Finance Malaysia",
-        bg: "#f3e8ff",
-        color: "#6d28d9",
-    },
-];
+const sorted_collaborations = collaborations.sort((a, b) =>
+    a.name.localeCompare(b.name),
+);
+
+// const certifications = [
+//     {
+//         icon: "📋",
+//         title: "SSM Registered",
+//         sub: "Suruhanjaya Syarikat Malaysia",
+//         bg: "#dbeafe",
+//         color: "#1e40af",
+//     },
+//     {
+//         icon: "⭐",
+//         title: "Bumiputera Certified",
+//         sub: "Lembaga Jurukur Tanah Malaysia (LJTM)",
+//         bg: "#fef9c3",
+//         color: "#854d0e",
+//     },
+//     {
+//         icon: "🏢",
+//         title: "MOF Registered",
+//         sub: "Ministry of Finance Malaysia",
+//         bg: "#f3e8ff",
+//         color: "#6d28d9",
+//     },
+// ];
 
 const teamMembers = [
     {
         name: "Zainal Abidin Bin Kamaruddin",
         role: "Director & Licensed Surveyor",
-        exp: "19+ years experience",
+        exp: "25+ years experience",
     },
     {
         name: "Faizah Binti Abdul Wahab",
@@ -427,7 +497,7 @@ const teamMembers = [
 ];
 
 /* ─────────────────────────────────────────────
-   MAIN COMPONENT
+   MAIN
 ───────────────────────────────────────────── */
 export default function About({ stats }) {
     const [modalOpen, setModalOpen] = useState(false);
@@ -437,7 +507,6 @@ export default function About({ stats }) {
     const [heroLoaded, setHeroLoaded] = useState(false);
 
     useEffect(() => {
-        // Trigger hero entrance after mount
         const t = setTimeout(() => setHeroLoaded(true), 80);
         return () => clearTimeout(t);
     }, []);
@@ -450,51 +519,24 @@ export default function About({ stats }) {
 
     return (
         <PublicLayout>
-            {/* ── GLOBAL KEYFRAMES ── */}
             <style>{`
-                @keyframes pulseRing {
-                    0%   { transform: translate(-50%,-50%) scale(0.8); opacity: 1; }
-                    100% { transform: translate(-50%,-50%) scale(2);   opacity: 0; }
-                }
-                @keyframes floatY {
-                    0%, 100% { transform: translateY(0px); }
-                    50%       { transform: translateY(-10px); }
-                }
-                @keyframes gradientShift {
-                    0%   { background-position: 0% 50%; }
-                    50%  { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-                @keyframes shimmer {
-                    0%   { left: -60%; }
-                    100% { left: 120%; }
-                }
-                @keyframes spinSlow {
-                    from { transform: rotate(0deg); }
-                    to   { transform: rotate(360deg); }
-                }
-                @keyframes blink {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.4; }
-                }
+                @keyframes pulseRing    { 0%{transform:translate(-50%,-50%) scale(0.8);opacity:1} 100%{transform:translate(-50%,-50%) scale(2);opacity:0} }
+                @keyframes floatY       { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-10px)} }
+                @keyframes gradientShift{ 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+                @keyframes shimmer      { 0%{left:-60%} 100%{left:120%} }
+                @keyframes spinSlow     { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+                @keyframes fadeIn       { from{opacity:0} to{opacity:1} }
+                @keyframes scaleIn      { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
                 .service-card { transition: all 0.35s cubic-bezier(.22,1,.36,1); }
                 .service-card:hover { transform: translateY(-6px) scale(1.015); box-shadow: 0 20px 40px rgba(6,95,70,0.12); }
                 .team-card { transition: all 0.35s cubic-bezier(.22,1,.36,1); }
                 .team-card:hover { transform: translateY(-8px); box-shadow: 0 24px 48px rgba(6,95,70,0.14); }
-                .collab-card { transition: all 0.35s cubic-bezier(.22,1,.36,1); }
-                .collab-card:hover { transform: translateY(-4px) scale(1.02); }
                 .cert-card { transition: all 0.4s cubic-bezier(.22,1,.36,1); }
                 .cert-card:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
                 .hero-img { transition: transform 0.6s cubic-bezier(.22,1,.36,1), box-shadow 0.4s ease; }
                 .hero-img:hover { transform: scale(1.06) rotate(-1deg) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.35); }
-                .shimmer-btn { position: relative; overflow: hidden; }
-                .shimmer-btn::after {
-                    content: '';
-                    position: absolute;
-                    top: 0; left: -60%; width: 40%; height: 100%;
-                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-                    animation: shimmer 2.5s infinite;
-                }
+                .shimmer-btn { position:relative; overflow:hidden; }
+                .shimmer-btn::after { content:''; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent); animation:shimmer 2.5s infinite; }
             `}</style>
 
             {/* ── HERO ── */}
@@ -502,14 +544,13 @@ export default function About({ stats }) {
                 className="px-6 py-14"
                 style={{
                     background:
-                        "linear-gradient(135deg, #022c22 0%, #064e3b 40%, #065f46 70%, #047857 100%)",
+                        "linear-gradient(135deg,#022c22 0%,#064e3b 40%,#065f46 70%,#047857 100%)",
                     backgroundSize: "300% 300%",
                     animation: "gradientShift 8s ease infinite",
                     position: "relative",
                     overflow: "hidden",
                 }}
             >
-                {/* Decorative rings */}
                 <div
                     style={{
                         position: "absolute",
@@ -546,14 +587,12 @@ export default function About({ stats }) {
                         pointerEvents: "none",
                     }}
                 />
-
                 <ParticleCanvas />
 
                 <div
                     className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center"
                     style={{ position: "relative", zIndex: 1 }}
                 >
-                    {/* Left text */}
                     <div>
                         <div
                             style={{
@@ -566,7 +605,7 @@ export default function About({ stats }) {
                             }}
                         >
                             <span className="inline-block text-xs font-bold text-green-300 uppercase tracking-widest bg-green-900 bg-opacity-50 px-3 py-1 rounded-full mb-4">
-                                Est. 2005 · Sungai Buloh, Selangor
+                                Est. 2011 · Sungai Buloh, Selangor
                             </span>
                         </div>
                         <div
@@ -585,7 +624,7 @@ export default function About({ stats }) {
                                 <span
                                     style={{
                                         background:
-                                            "linear-gradient(90deg, #4ade80, #34d399, #6ee7b7)",
+                                            "linear-gradient(90deg,#4ade80,#34d399,#6ee7b7)",
                                         WebkitBackgroundClip: "text",
                                         WebkitTextFillColor: "transparent",
                                         backgroundSize: "200%",
@@ -612,7 +651,7 @@ export default function About({ stats }) {
                             <p className="text-green-100 text-sm leading-relaxed mb-8">
                                 A licensed Bumiputera-owned surveying and
                                 mapping consultancy delivering precision
-                                solutions across Malaysia for over 12 years.
+                                solutions across Malaysia for over 15 years.
                             </p>
                             <MagneticBtn
                                 href="/contact"
@@ -623,7 +662,6 @@ export default function About({ stats }) {
                         </div>
                     </div>
 
-                    {/* Right image grid */}
                     <div className="grid grid-cols-2 gap-3">
                         {[
                             "/images/visi1.jpg",
@@ -669,16 +707,12 @@ export default function About({ stats }) {
                     overflow: "hidden",
                 }}
             >
-                {/* Animated scan line */}
                 <div
                     style={{
                         position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
+                        inset: 0,
                         background:
-                            "linear-gradient(90deg, transparent 0%, rgba(74,222,128,0.04) 50%, transparent 100%)",
+                            "linear-gradient(90deg,transparent,rgba(74,222,128,0.04),transparent)",
                         animation: "shimmer 4s linear infinite",
                         pointerEvents: "none",
                     }}
@@ -686,7 +720,7 @@ export default function About({ stats }) {
                 <div className="max-w-6xl mx-auto grid grid-cols-4">
                     {[
                         { num: 100, suffix: "+", label: "Projects Done" },
-                        { num: 12, suffix: "+", label: "Years Experience" },
+                        { num: 25, suffix: "+", label: "Years Experience" },
                         { num: 10, suffix: "+", label: "Licensed Surveyors" },
                         { num: 100, suffix: "%", label: "Client Satisfaction" },
                     ].map(({ num, suffix, label }, i) => (
@@ -701,7 +735,6 @@ export default function About({ stats }) {
                                 position: "relative",
                             }}
                         >
-                            {/* Pulse ring behind number */}
                             <div
                                 style={{
                                     position: "relative",
@@ -729,10 +762,10 @@ export default function About({ stats }) {
 
             <div className="bg-white">
                 <div className="max-w-6xl mx-auto px-6 py-14 space-y-16">
-                    {/* ── MISSION & VISION ── */}
+                    {/* ── WHO WE ARE ── */}
                     <div>
                         <Reveal>
-                            <SectionTitle>Mission & Vision</SectionTitle>
+                            <SectionTitle>Who We Are</SectionTitle>
                         </Reveal>
                         <div className="grid md:grid-cols-2 gap-6">
                             <Reveal delay={0}>
@@ -743,24 +776,21 @@ export default function About({ stats }) {
                                         border: "0.5px solid #bbf7d0",
                                     }}
                                 >
-                                    <div
-                                        className="text-3xl mb-3"
-                                        style={{
-                                            animation:
-                                                "floatY 3s ease-in-out infinite",
-                                        }}
-                                    >
-                                        🎯
-                                    </div>
+                                    <div className="text-3xl mb-3">🏢</div>
                                     <h3 className="font-bold text-green-900 mb-3">
-                                        Our Mission
+                                        About Us
                                     </h3>
                                     <p className="text-sm text-green-800 leading-relaxed">
-                                        To deliver precise, reliable and
-                                        professional surveying and mapping
-                                        services that support sustainable
-                                        infrastructure development and land
-                                        management across Malaysia.
+                                        Jurukur Visi Sdn Bhd is a licensed
+                                        surveying and mapping consultancy firm
+                                        offering land surveying and development
+                                        planning advisory services. Formerly
+                                        known as Jurukur Visi, the company was
+                                        established on 14 October 2011 by Sr.
+                                        Zainal Abidin bin Kamaruddin, a Licensed
+                                        Professional Surveyor registered under
+                                        the Licensed Land Surveyors Act 458
+                                        (Revised 1991).
                                     </p>
                                 </TiltCard>
                             </Reveal>
@@ -772,35 +802,85 @@ export default function About({ stats }) {
                                         border: "0.5px solid #bfdbfe",
                                     }}
                                 >
-                                    <div
-                                        className="text-3xl mb-3"
-                                        style={{
-                                            animation:
-                                                "floatY 3.5s ease-in-out infinite",
-                                            animationDelay: "0.5s",
-                                        }}
-                                    >
-                                        🔭
-                                    </div>
+                                    <div className="text-3xl mb-3">🎯</div>
                                     <h3 className="font-bold text-blue-900 mb-3">
-                                        Our Vision
+                                        Our Commitment
                                     </h3>
                                     <p className="text-sm text-blue-800 leading-relaxed">
-                                        To be the most trusted and innovative
-                                        Bumiputera surveying consultancy in
-                                        Malaysia, recognised for technical
-                                        excellence, integrity and commitment to
-                                        client success.
+                                        Jurukur Visi Sdn Bhd is committed to
+                                        becoming a highly capable
+                                        Bumiputera-owned surveying and mapping
+                                        consultancy, delivering professional
+                                        surveying and land development advisory
+                                        services that meet client needs — in
+                                        line with the latest advancements in
+                                        surveying technology.
                                     </p>
                                 </TiltCard>
                             </Reveal>
                         </div>
+                        <Reveal delay={180}>
+                            <div
+                                className="mt-6 rounded-2xl p-7"
+                                style={{
+                                    background: "#fff",
+                                    border: "0.5px solid #e5e7eb",
+                                }}
+                            >
+                                <h3 className="font-bold text-gray-800 mb-4">
+                                    Our Approach
+                                </h3>
+                                <div className="space-y-4">
+                                    {[
+                                        "We fully utilise information technology throughout the field survey process (field-to-finish) to achieve 100% accuracy right through to final product delivery. In all activities carried out, we adopt the latest technology to ensure quality and precision can be continuously improved over time.",
+                                        "We use the most current and advanced hardware and software available on the market — from data collection and information processing through to the preparation of working plans for data compilation.",
+                                    ].map((text, i) => (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                display: "flex",
+                                                gap: 12,
+                                                alignItems: "flex-start",
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    width: 24,
+                                                    height: 24,
+                                                    borderRadius: "50%",
+                                                    background: "#d1fae5",
+                                                    color: "#065f46",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    fontSize: 12,
+                                                    fontWeight: 800,
+                                                    flexShrink: 0,
+                                                    marginTop: 1,
+                                                }}
+                                            >
+                                                {i + 1}
+                                            </div>
+                                            <p className="text-sm text-gray-600 leading-relaxed">
+                                                {text}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-sm text-gray-500 mt-5 italic border-t border-gray-100 pt-4">
+                                    Armed with dedication, expertise and
+                                    experience, we look forward to receiving
+                                    support from both government and private
+                                    sector bodies.
+                                </p>
+                            </div>
+                        </Reveal>
                     </div>
 
-                    {/* ── COMPANY PROFILE ── */}
+                    {/* ── OUR STORY ── */}
                     <div>
                         <Reveal>
-                            <SectionTitle>Company Profile</SectionTitle>
+                            <SectionTitle>Our Story</SectionTitle>
                         </Reveal>
                         <div className="grid md:grid-cols-2 gap-12 items-center">
                             <Reveal delay={0}>
@@ -836,7 +916,7 @@ export default function About({ stats }) {
                             </Reveal>
                             <Reveal delay={160}>
                                 <span className="text-xs font-bold text-green-600 uppercase tracking-widest">
-                                    Who We Are
+                                    Est. 2011 · Sungai Buloh, Selangor
                                 </span>
                                 <h2 className="text-3xl font-bold text-gray-900 mt-2 mb-4 leading-tight">
                                     Malaysia's Trusted
@@ -846,7 +926,7 @@ export default function About({ stats }) {
                                 <p className="text-gray-500 text-sm leading-relaxed mb-4">
                                     Jurukur Visi Sdn Bhd is a professional
                                     Bumiputera-owned consulting firm based in
-                                    Sungai Buloh, Selangor. Since 2005, we have
+                                    Sungai Buloh, Selangor. Since 2011, we have
                                     served government and private sector clients
                                     nationwide with precision and
                                     professionalism on every engagement.
@@ -910,18 +990,16 @@ export default function About({ stats }) {
                                             setActiveService(null)
                                         }
                                     >
-                                        {/* Top accent bar */}
                                         <div
                                             className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
                                             style={{
                                                 background:
                                                     activeService === index
-                                                        ? "linear-gradient(90deg, #4ade80, #34d399)"
+                                                        ? "linear-gradient(90deg,#4ade80,#34d399)"
                                                         : "#15803d",
                                                 transition: "background 0.3s",
                                             }}
                                         />
-                                        {/* Background number */}
                                         <span
                                             className="absolute top-3 right-4 font-bold select-none"
                                             style={{
@@ -981,7 +1059,6 @@ export default function About({ stats }) {
                                 return (
                                     <Reveal key={name} delay={i * 80}>
                                         <div className="team-card group rounded-2xl border border-gray-100 p-6 text-center bg-white">
-                                            {/* Avatar with ring animation on hover */}
                                             <div
                                                 style={{
                                                     position: "relative",
@@ -1001,7 +1078,6 @@ export default function About({ stats }) {
                                                 >
                                                     {initials}
                                                 </div>
-                                                {/* Spinning ring */}
                                                 <div
                                                     className="group-hover:opacity-100"
                                                     style={{
@@ -1081,37 +1157,97 @@ export default function About({ stats }) {
                         </div>
                     </div>
 
-                    {/* ── COLLABORATIONS ── */}
+                    {/* ── CLIENTS ── */}
                     <div>
                         <Reveal>
-                            <SectionTitle>Clients</SectionTitle>
+                            <SectionTitle>Our Clients</SectionTitle>
                         </Reveal>
                         <div className="grid md:grid-cols-4 gap-5">
-                            {collaborations.map(
-                                ({ abbr, name, type, bg, color }, i) => (
-                                    <Reveal key={name} delay={i * 70}>
-                                        <div className="collab-card rounded-2xl border border-gray-100 p-6 text-center">
+                            {collaborations.map((item, i) => (
+                                <Reveal key={item.name} delay={i * 70}>
+                                    <div
+                                        className="rounded-2xl border border-gray-100 p-6 text-center"
+                                        style={{
+                                            transition:
+                                                "all 0.35s cubic-bezier(.22,1,.36,1)",
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform =
+                                                "translateY(-4px)";
+                                            e.currentTarget.style.boxShadow =
+                                                "0 12px 32px rgba(6,78,59,0.08)";
+                                            e.currentTarget.style.borderColor =
+                                                "#bbf7d0";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform =
+                                                "translateY(0)";
+                                            e.currentTarget.style.boxShadow =
+                                                "none";
+                                            e.currentTarget.style.borderColor =
+                                                "#f3f4f6";
+                                        }}
+                                    >
+                                        {/* Logo box */}
+                                        <div
+                                            style={{
+                                                width: 64,
+                                                height: 64,
+                                                borderRadius: 14,
+                                                background: "#f9fafb",
+                                                border: "1px solid #e5e7eb",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                margin: "0 auto 12px",
+                                                overflow: "hidden",
+                                            }}
+                                        >
+                                            {item.localLogo ? (
+                                                <img
+                                                    src={item.localLogo}
+                                                    alt={item.name}
+                                                    style={{
+                                                        width: 52,
+                                                        height: 52,
+                                                        objectFit: "contain",
+                                                    }}
+                                                    onError={(e) => {
+                                                        e.target.style.display =
+                                                            "none";
+                                                        e.target.nextSibling.style.display =
+                                                            "flex";
+                                                    }}
+                                                />
+                                            ) : null}
+                                            {/* Fallback initials */}
                                             <div
-                                                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 text-lg font-bold"
                                                 style={{
-                                                    background: bg,
-                                                    color,
-                                                    // animation: `floatY ${3 + i * 0.3}s ease-in-out infinite`, //flaoting animation
-                                                    animationDelay: `${i * 0.3}s`,
+                                                    display: item.localLogo
+                                                        ? "none"
+                                                        : "flex",
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    background: "#d1fae5",
+                                                    color: "#065f46",
+                                                    fontSize: 12,
+                                                    fontWeight: 800,
                                                 }}
                                             >
-                                                {abbr}
+                                                {item.abbr}
                                             </div>
-                                            <p className="font-bold text-gray-800 text-sm">
-                                                {name}
-                                            </p>
-                                            <p className="text-gray-400 text-xs mt-1">
-                                                {type}
-                                            </p>
                                         </div>
-                                    </Reveal>
-                                ),
-                            )}
+                                        <p className="font-bold text-gray-800 text-sm leading-snug">
+                                            {item.name}
+                                        </p>
+                                        <p className="text-gray-400 text-xs mt-1">
+                                            {item.type}
+                                        </p>
+                                    </div>
+                                </Reveal>
+                            ))}
                         </div>
                     </div>
 
@@ -1156,14 +1292,13 @@ export default function About({ stats }) {
                             className="rounded-2xl p-10 text-center"
                             style={{
                                 background:
-                                    "linear-gradient(135deg, #064e3b, #065f46)",
+                                    "linear-gradient(135deg,#064e3b,#065f46)",
                                 backgroundSize: "200% 200%",
                                 animation: "gradientShift 5s ease infinite",
                                 position: "relative",
                                 overflow: "hidden",
                             }}
                         >
-                            {/* Decorative circles */}
                             <div
                                 style={{
                                     position: "absolute",
@@ -1188,7 +1323,6 @@ export default function About({ stats }) {
                                     pointerEvents: "none",
                                 }}
                             />
-
                             <h2
                                 className="text-2xl font-bold text-white mb-3"
                                 style={{ position: "relative" }}
@@ -1251,7 +1385,7 @@ export default function About({ stats }) {
                         <p className="text-white font-medium mb-3">Contact</p>
                         <div className="space-y-2 text-sm">
                             <p>📍 Sungai Buloh, Selangor</p>
-                            <p>📞 +603 1234 5678</p>
+                            <p>📞 +03-6038 8523</p>
                             <p>✉️ info@jurukurvisi.com</p>
                         </div>
                     </div>
@@ -1291,10 +1425,6 @@ export default function About({ stats }) {
                             Click anywhere to close
                         </p>
                     </div>
-                    <style>{`
-                        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-                    `}</style>
                 </div>
             )}
         </PublicLayout>
