@@ -65,7 +65,7 @@ class ProjectController extends Controller
     {
         // Validate input.
         $request->validate([
-            'project_id' => 'required|max:20|alpha_num|unique:projects,project_id',
+            'project_id' => 'required|string|unique:projects,project_id|regex:/^[a-zA-Z0-9\-]+$/',
             'project_name' => 'required|string|max:100',
             'project_start' => 'required|date',
             'project_end' => 'required|date|after_or_equal:project_start',

@@ -410,13 +410,12 @@ export default function Index({ bookings, stats, filters }) {
                 >
                     <colgroup>
                         <col style={{ width: "9%" }} />
-                        <col style={{ width: "20%" }} />
+                        <col style={{ width: "23%" }} />
                         <col style={{ width: "13%" }} />
-                        <col style={{ width: "10%" }} />
                         <col style={{ width: "9%" }} />
-                        <col style={{ width: "9%" }} />
-                        <col style={{ width: "9%" }} />
-                        <col style={{ width: "9%" }} />
+                        <col style={{ width: "8%" }} />
+                        <col style={{ width: "7%" }} />
+                        <col style={{ width: "11%" }} />
                         <col style={{ width: "12%" }} />
                     </colgroup>
                     <thead>
@@ -431,7 +430,6 @@ export default function Index({ bookings, stats, filters }) {
                                 "Client",
                                 "Service",
                                 "Pref. Date",
-                                "Time",
                                 "Type",
                                 "Status",
                                 "Submitted",
@@ -650,7 +648,7 @@ export default function Index({ bookings, stats, filters }) {
                                         <td
                                             style={{
                                                 padding: "12px 14px",
-                                                fontSize: 10,
+                                                fontSize: 11,
                                                 color: "#9ca3af",
                                             }}
                                         >
@@ -660,6 +658,9 @@ export default function Index({ bookings, stats, filters }) {
                                                 day: "numeric",
                                                 month: "short",
                                                 year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
                                             })}
                                         </td>
 

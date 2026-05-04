@@ -24,6 +24,7 @@ export default function Login() {
     return (
         <div
             className="min-h-screen flex items-center justify-center"
+            
             style={{
                 background: "linear-gradient(135deg,#022c22,#064e3b,#065f46)",
                 backgroundSize: "300% 300%",

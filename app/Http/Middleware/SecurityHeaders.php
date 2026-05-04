@@ -12,6 +12,7 @@ class SecurityHeaders
     public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
+        $response->headers->remove('X-Powered-By');
 
         // Only apply CSP in production.
         if (app()->environment('production')) {

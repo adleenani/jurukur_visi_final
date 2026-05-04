@@ -98,7 +98,7 @@ class BookingController extends Controller
                 "Tel: +03-6038 8523\n" .
                 "Fax: +03-6038 8524\n" .
                 "Email: info@jurukurvisi.com\n" .
-                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.". 
+                "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor.\n\n". 
                 "n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" .
                 "This is an automated email. Please do not reply to this email.\n" .
                 "This mailbox is not monitored and you will not receive a response.\n" .

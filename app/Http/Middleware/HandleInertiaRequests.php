@@ -20,18 +20,19 @@ class HandleInertiaRequests extends Middleware
     // Define the props that are shared by default with all Inertia responses.
     public function share(Request $request): array
     {
-        // Share flash messages and authenticated user info with all Inertia responses.
-        return [
-            ...parent::share($request),
+        return array_merge(parent::share($request), [
+            'auth' => [
+                'user' => session('username'),
+            ],
             'flash' => [
                 'success' => session('success'),
                 'message' => session('message'),
                 'error' => session('error'),
+                'timestamp' => now()->timestamp, // forces re-trigger every request
             ],
-            'auth' => [
-                'user' => session('username'),
-                'role' => session('user_role'),
-            ],
-        ];
+            'errors' => session('errors')
+                ? session('errors')->getBag('default')->getMessages()
+                : (object) [],
+        ]);
     }
 }

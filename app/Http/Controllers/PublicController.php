@@ -73,7 +73,7 @@ class PublicController extends Controller
             'phone' => strip_tags($request->phone),
             'service_type' => $request->service_type,
             'preferred_date' => $request->preferred_date,
-            'consultation_type' => 'in-person',
+            'consultation_type' => $request->consultation_type,
             'message' => strip_tags($request->message),
             'status' => 'pending',
         ]);

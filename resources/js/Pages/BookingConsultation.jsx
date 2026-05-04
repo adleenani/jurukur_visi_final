@@ -431,7 +431,7 @@ export default function Contact() {
                                     optional.
                                 </p>
 
-                                {flash.success && (
+                                {/* {flash.success && (
                                     <div
                                         style={{
                                             background: "#f0fdf4",
@@ -445,7 +445,7 @@ export default function Contact() {
                                     >
                                         ✓ {flash.success}
                                     </div>
-                                )}
+                                )} */}
 
                                 <form
                                     onSubmit={submitBooking}

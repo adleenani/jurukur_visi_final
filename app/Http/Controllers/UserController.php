@@ -63,7 +63,7 @@ class UserController extends Controller
             'email' => 'required|email|max:100|unique:users,email',
             'password' => [
                 'required',
-                'min:14',
+                'min:15',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
             ],
@@ -117,7 +117,7 @@ class UserController extends Controller
         $request->validate([
             'password' => [
                 'required',
-                'min:14',
+                'min:15',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
             ],

@@ -37,7 +37,7 @@ class AuthController extends Controller
             'email' => 'required|email|max:100|unique:users,email',
             'password' => [
                 'required',
-                'min:14',
+                'min:15',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
             ],
