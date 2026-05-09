@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found | Jurukur Visi</title>
+    <title>Page Not Found | Jurukur Visi Sdn Bhd</title>
     <style>
         * {
             margin: 0;

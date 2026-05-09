@@ -347,7 +347,7 @@ export default function Show({ booking }) {
                                 label="Submitted"
                                 value={new Date(
                                     booking.created_at,
-                                ).toLocaleDateString("en-MY", {
+                                ).toLocaleDateString("en-GB", {
                                     day: "numeric",
                                     month: "long",
                                     year: "numeric",
@@ -430,7 +430,7 @@ export default function Show({ booking }) {
                             >
                                 {new Date(
                                     booking.confirmed_date,
-                                ).toLocaleDateString("en-MY", {
+                                ).toLocaleDateString("en-GB", {
                                     day: "numeric",
                                     month: "long",
                                     year: "numeric",

@@ -101,14 +101,14 @@ class AuthController extends Controller
         try {
             Mail::raw(
                 "Hello {$user->full_name},\n\n" .
-                "Your Jurukur Visi login verification code is:\n\n" .
+                "Your Jurukur Visi Sdn Bhd login verification code is:\n\n" .
                 "    {$code}\n\n" .
                 "This code expires in 10 minutes.\n\n" .
                 "If you did not request this, please ignore this email.\n\n" .
-                "— Jurukur Visi System",
+                "— Jurukur Visi Sdn Bhd System",
                 function ($message) use ($user) {
                     $message->to($user->email)
-                        ->subject('Your Jurukur Visi Login Code');
+                        ->subject('Your Jurukur Visi Sdn Bhd Login Code');
                 }
             );
         } catch (\Exception $e) {
@@ -262,7 +262,7 @@ class AuthController extends Controller
         session(['must_change_password' => false]);
 
         return redirect()->route('dashboard')
-            ->with('success', 'Password changed successfully! Welcome to Jurukur Visi.');
+            ->with('success', 'Password changed successfully! Welcome to Jurukur Visi Sdn Bhd.');
     }
 
     //  Handle logout.

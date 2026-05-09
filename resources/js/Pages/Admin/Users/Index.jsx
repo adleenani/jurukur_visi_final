@@ -503,7 +503,7 @@ export default function Index({ users, stats, filters }) {
                                     >
                                         {new Date(
                                             user.created_at,
-                                        ).toLocaleDateString("en-MY", {
+                                        ).toLocaleDateString("en-GB", {
                                             day: "numeric",
                                             month: "short",
                                             year: "numeric",

@@ -773,7 +773,7 @@ export default function Home() {
                             { label:"Projects Done", value: 100, suffix:"+" },
                             {
                                 label: "Years Experience",
-                                value: 12,
+                                value: 15,
                                 suffix: "+",
                             },
                             {
@@ -978,7 +978,7 @@ export default function Home() {
                             { label:"Projects Completed", value: 100, suffix:"+" },
                             {
                                 label: "Years Experience",
-                                value: 12,
+                                value: 15,
                                 suffix: "+",
                             },
                             { label: "Partners", value: 30, suffix: "+" },

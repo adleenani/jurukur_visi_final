@@ -424,9 +424,9 @@ export default function Index({ projects, filters }) {
                                     >
                                         {new Date(
                                             project.created_at,
-                                        ).toLocaleDateString("en-MY", {
-                                            day: "numeric",
-                                            month: "short",
+                                        ).toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "2-digit",
                                             year: "numeric",
                                             hour: "2-digit",
                                             minute: "2-digit",

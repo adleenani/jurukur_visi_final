@@ -29,7 +29,7 @@ export default function Navbar() {
                         }}
                     />
                     <span className="text-green-800 font-bold text-lg tracking-wide">
-                        JURUKUR VISI
+                        JURUKUR VISI SDN BHD
                     </span>
                 </Link>
 

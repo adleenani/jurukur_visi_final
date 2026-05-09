@@ -122,7 +122,7 @@ export default function Login() {
                             letterSpacing: "0.04em",
                         }}
                     >
-                        JURUKUR VISI
+                        JURUKUR VISI SDN BHD
                     </h1>
                     <p
                         style={{

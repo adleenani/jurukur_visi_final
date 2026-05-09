@@ -632,7 +632,7 @@ export default function About({ stats }) {
                                             "gradientShift 3s ease infinite",
                                     }}
                                 >
-                                    Jurukur Visi
+                                    Jurukur Visi Sdn Bhd
                                 </span>
                                 <br />
                                 Sdn Bhd
@@ -1369,6 +1369,7 @@ export default function About({ stats }) {
                                 ["About", "/about"],
                                 ["Projects", "/projects"],
                                 ["Contact", "/contact"],
+                                ["Staff Login", "/login"],
                             ].map(([label, href]) => (
                                 <div key={label}>
                                     <Link
