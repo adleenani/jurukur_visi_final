@@ -30,105 +30,115 @@ class AuthController extends Controller
     // Handle signup form submission.
     public function signup(Request $request)
     {
-        // Validate input with strong rules and custom messages.
-        $validated = $request->validate([
-            'username' => 'required|min:4|max:30|alpha_num|unique:users,username',
-            'full_name' => 'required|string|max:100',
-            'email' => 'required|email|max:100|unique:users,email',
-            'password' => [
-                'required',
-                'min:15',
-                'regex:/[A-Z]/',
-                'regex:/[0-9]/',
-            ],
-        ]);
+        // Prevent concurrent signups
+        if (cache()->has('registration_in_progress')) {
+            return back()->withErrors(['username' => 'Another registration is currently in progress. Please try again in a moment.']);
+        }
 
-        // Create new user with hashed password and default role 'pic', but set is_active to false until admin approval.
-        User::create([
-            'username' => $validated['username'],
-            'full_name' => $validated['full_name'],
-            'email' => $validated['email'],
-            'password' => password_hash($validated['password'], PASSWORD_ARGON2ID),
-            'role' => 'pic',
-            'is_active' => false,
-        ]);
+        cache()->put('registration_in_progress', true, 30);
 
-        // Redirect to login with message about account creation and pending approval.
-        return redirect()->route('login')
-            ->with('message', 'Account created! Wait for admin approval before logging in.');
+        try {
+            // Validate input with strong rules and custom messages.
+            $validated = $request->validate([
+                'username' => 'required|min:4|max:30|alpha_num|unique:users,username',
+                'full_name' => 'required|string|max:100',
+                'email' => 'required|email|max:100|unique:users,email',
+                'password' => [
+                    'required',
+                    'min:15',
+                    'regex:/[A-Z]/',
+                    'regex:/[0-9]/',
+                ],
+            ]);
+
+            User::create([
+                'username' => $validated['username'],
+                'full_name' => $validated['full_name'],
+                'email' => $validated['email'],
+                'password' => password_hash($validated['password'], PASSWORD_ARGON2ID),
+                'role' => 'pic',
+                'is_active' => false,
+            ]);
+
+            return redirect()->route('login')
+                ->with('message', 'Account created! Wait for admin approval before logging in.');
+
+        } finally {
+            cache()->forget('registration_in_progress');
+        }
     }
 
     // Handle login form submission.
     public function login(Request $request)
     {
-        // Validate input with strong rules
-        $request->validate([
-            'username' => 'required',
-            'password' => 'required',
-        ]);
-
-        $key = 'login.' . $request->ip();
-
-        // Rate limiting — 3 attempts max. If exceeded, block for 15 minutes.
-        if (RateLimiter::tooManyAttempts($key, 3)) {
-            $seconds = RateLimiter::availableIn($key);
-            return back()->withErrors([
-                'username' => 'Too many attempts. Try again in ' . ceil($seconds / 60) . ' minutes.',
-            ]);
+        // Prevent concurrent logins
+        if (cache()->has('login_in_progress_' . $request->ip())) {
+            return back()->withErrors(['username' => 'A login attempt is already in progress. Please wait a moment.']);
         }
 
-        // Find user by username.
-        $user = User::where('username', $request->username)->first();
+        cache()->put('login_in_progress_' . $request->ip(), true, 10);
 
-        // Check credentials.
-        if (!$user || !password_verify($request->password, $user->password)) {
-            RateLimiter::hit($key, 900);
-            return back()->withErrors(['username' => 'Invalid username or password.']);
-        }
-
-        // Check account approved.
-        if (!$user->is_active) {
-            return back()->withErrors(['username' => 'Your account is pending admin approval.']);
-        }
-
-        // Generate 6-digit OTP.
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        // Store hashed OTP in DB.
-        $user->update(['tfa_code' => Hash::make($code)]);
-
-        // Send email.
         try {
-            Mail::raw(
-                "Hello {$user->full_name},\n\n" .
-                "Your Jurukur Visi Sdn Bhd login verification code is:\n\n" .
-                "    {$code}\n\n" .
-                "This code expires in 10 minutes.\n\n" .
-                "If you did not request this, please ignore this email.\n\n" .
-                "— Jurukur Visi Sdn Bhd System",
-                function ($message) use ($user) {
-                    $message->to($user->email)
-                        ->subject('Your Jurukur Visi Sdn Bhd Login Code');
-                }
-            );
-        } catch (\Exception $e) {
+            // Validate input
+            $request->validate([
+                'username' => 'required',
+                'password' => 'required',
+            ]);
 
-            // Log the error and show a generic message to the user.
-            Log::error('2FA email failed: ' . $e->getMessage());
-            return back()->withErrors(['username' => 'Failed to send verification email. Please try again.']);
+            $key = 'login.' . $request->ip();
+
+            // Rate limiting
+            if (RateLimiter::tooManyAttempts($key, 3)) {
+                $seconds = RateLimiter::availableIn($key);
+                return back()->withErrors([
+                    'username' => 'Too many attempts. Try again in ' . ceil($seconds / 60) . ' minutes.',
+                ]);
+            }
+
+            $user = User::where('username', $request->username)->first();
+
+            if (!$user || !password_verify($request->password, $user->password)) {
+                RateLimiter::hit($key, 900);
+                return back()->withErrors(['username' => 'Invalid username or password.']);
+            }
+
+            if (!$user->is_active) {
+                return back()->withErrors(['username' => 'Your account is pending admin approval.']);
+            }
+
+            $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $user->update(['tfa_code' => Hash::make($code)]);
+
+            try {
+                Mail::raw(
+                    "Hello {$user->full_name},\n\n" .
+                    "Your Jurukur Visi Sdn Bhd login verification code is:\n\n" .
+                    "    {$code}\n\n" .
+                    "This code expires in 10 minutes.\n\n" .
+                    "If you did not request this, please ignore this email.\n\n" .
+                    "— Jurukur Visi Sdn Bhd System",
+                    function ($message) use ($user) {
+                        $message->to($user->email)
+                            ->subject('Your Jurukur Visi Sdn Bhd Login Code');
+                    }
+                );
+            } catch (\Exception $e) {
+                Log::error('2FA email failed: ' . $e->getMessage());
+                return back()->withErrors(['username' => 'Failed to send verification email. Please try again.']);
+            }
+
+            session([
+                '2fa_user_id' => $user->id,
+                '2fa_expires' => now()->addMinutes(10)->timestamp,
+            ]);
+
+            RateLimiter::clear($key);
+
+            return redirect()->route('2fa.show');
+
+        } finally {
+            cache()->forget('login_in_progress_' . $request->ip());
         }
-
-        // Store temp session for 2FA.
-        session([
-            '2fa_user_id' => $user->id,
-            '2fa_expires' => now()->addMinutes(10)->timestamp,
-        ]);
-
-        // Clear login attempts on successful password verification.
-        RateLimiter::clear($key);
-
-        // Redirect to 2FA verification page
-        return redirect()->route('2fa.show');
     }
 
     // Show 2FA verification form.

@@ -20,7 +20,7 @@ const services = [
         color: "#dbeafe",
         accent: "#1e40af",
     },
-    {                                
+    {
         icon: "🏗️",
         title: "Engineering Survey",
         color: "#fef9c3",
@@ -64,7 +64,11 @@ const workImages = [
 ];
 
 const contactInfo = [
-    { icon: "📍", label: "Address", value: "Sungai Buloh, Selangor, Malaysia" },
+    {
+        icon: "📍",
+        label: "Address",
+        value: "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor",
+    },
     { icon: "📞", label: "Phone", value: "+03-6038 8523" },
     { icon: "✉️", label: "Email", value: "info@jurukurvisi.com" },
     { icon: "🕐", label: "Hours", value: "Mon–Fri, 9am–5pm" },
@@ -540,15 +544,26 @@ export default function Home() {
         function init() {
             const el = document.getElementById("home-map");
             if (!el || el._leaflet_id) return;
-            map = window.L.map("home-map").setView([3.1985, 101.5119], 16);
+            map = window.L.map("home-map").setView(
+                [3.201135150798165, 101.48581646678136],
+                16,
+            );
             window.L.tileLayer(
-                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                { attribution: "© OpenStreetMap contributors" },
+                "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+                {
+                    attribution: "© Google Maps",
+                },
             ).addTo(map);
-            window.L.marker([3.1985, 101.5119])
+            window.L.marker([3.201135150798165, 101.48581646678136])
                 .addTo(map)
                 .bindPopup(
-                    "<b>Jurukur Visi Sdn Bhd</b><br>Sungai Buloh, Selangor",
+                    `
+        <div style="text-align:center;width:200px;">
+            <img src="/images/office.jpg" style="width:100%;border-radius:8px;margin-bottom:6px;" />
+            <b style="font-size:12px;">Jurukur Visi Sdn Bhd</b><br>
+                 </div>
+    `,
+                    { maxWidth: 220 },
                 )
                 .openPopup();
         }
@@ -770,7 +785,7 @@ export default function Home() {
                         className="grid grid-cols-3 gap-6 max-w-lg mx-auto"
                     >
                         {[
-                            { label:"Projects Done", value: 100, suffix:"+" },
+                            { label: "Projects Done", value: 100, suffix: "+" },
                             {
                                 label: "Years Experience",
                                 value: 15,
@@ -836,78 +851,92 @@ export default function Home() {
                             </p>
                         </div>
                     </Reveal>
-                    <div className="grid md:grid-cols-3 gap-5 [&>*:last-child]:col-start-2">
-                        {services.map(({ icon, title, color, accent }, i) => (
-                            <Reveal
-                                key={title}
-                                delay={i * 70}
-                                from={
-                                    i % 3 === 0
-                                        ? "left"
-                                        : i % 3 === 2
-                                          ? "right"
-                                          : "bottom"
-                                }
-                            >
-                                <TiltCard
-                                    className="svc-card bg-white rounded-2xl p-6 border cursor-pointer"
-                                    style={{
-                                        borderColor:
-                                            hoveredService === i
-                                                ? accent
-                                                : "#e5e7eb",
-                                        background:
-                                            hoveredService === i
-                                                ? color
-                                                : "#fff",
-                                    }}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {services.map(({ icon, title, color, accent }, i) => {
+                            const isLast = i === services.length - 1;
+
+                            return (
+                                <Reveal
+                                    key={title}
+                                    // Add the logic here:
+                                    // On mobile, it spans 1 column (default).
+                                    // On laptop (md), the last item spans 2 columns and centers itself.
+                                    className={
+                                        isLast
+                                            ? "md:col-span-2 md:flex md:justify-center"
+                                            : ""
+                                    }
+                                    delay={i * 70}
+                                    from={
+                                        i % 3 === 0
+                                            ? "left"
+                                            : i % 3 === 2
+                                              ? "right"
+                                              : "bottom"
+                                    }
                                 >
-                                    <div
-                                        onMouseEnter={() =>
-                                            setHoveredService(i)
-                                        }
-                                        onMouseLeave={() =>
-                                            setHoveredService(null)
-                                        }
-                                        className="flex items-center gap-4"
-                                        style={{ height: "100%" }}
+                                    <TiltCard
+                                        // If centered on laptop, we give it a max-width so it
+                                        // doesn't stretch across the whole screen
+                                        className={`svc-card bg-white rounded-2xl p-6 border cursor-pointer ${isLast ? "md:max-w-[calc(50%-10px)] w-full" : ""}`}
+                                        style={{
+                                            borderColor:
+                                                hoveredService === i
+                                                    ? accent
+                                                    : "#e5e7eb",
+                                            background:
+                                                hoveredService === i
+                                                    ? color
+                                                    : "#fff",
+                                        }}
                                     >
                                         <div
-                                            style={{
-                                                width: 52,
-                                                height: 52,
-                                                borderRadius: 16,
-                                                background:
-                                                    hoveredService === i
-                                                        ? accent
-                                                        : "#f0fdf4",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                fontSize: 24,
-                                                flexShrink: 0,
-                                                transition:
-                                                    "all 0.35s cubic-bezier(.22,1,.36,1)",
-                                                animation:
-                                                    hoveredService === i
-                                                        ? "floatY 1.5s ease-in-out infinite"
-                                                        : "none",
-                                            }}
+                                            onMouseEnter={() =>
+                                                setHoveredService(i)
+                                            }
+                                            onMouseLeave={() =>
+                                                setHoveredService(null)
+                                            }
+                                            className="flex items-center gap-4"
+                                            style={{ height: "100%" }}
                                         >
-                                            {icon}
+                                            <div
+                                                style={{
+                                                    width: 52,
+                                                    height: 52,
+                                                    borderRadius: 16,
+                                                    background:
+                                                        hoveredService === i
+                                                            ? accent
+                                                            : "#f0fdf4",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    fontSize: 24,
+                                                    flexShrink: 0,
+                                                    transition:
+                                                        "all 0.35s cubic-bezier(.22,1,.36,1)",
+                                                    animation:
+                                                        hoveredService === i
+                                                            ? "floatY 1.5s ease-in-out infinite"
+                                                            : "none",
+                                                }}
+                                            >
+                                                {icon}
+                                            </div>
+                                            <h3 className="font-bold text-gray-800 text-sm leading-snug">
+                                                {title}
+                                            </h3>
                                         </div>
-                                        <h3 className="font-bold text-gray-800 text-sm leading-snug">
-                                            {title}
-                                        </h3>
-                                    </div>
-                                </TiltCard>
-                            </Reveal>
-                        ))}
+                                    </TiltCard>
+                                </Reveal>
+                            );
+                        })}
                     </div>
                     <Reveal delay={200}>
                         <div className="text-center mt-8">
                             <MagBtn
-                                href="/about"
+                                href="/about#services"
                                 className="inline-block text-green-700 font-semibold text-sm hover:underline"
                             >
                                 Learn more about our services →
@@ -975,7 +1004,11 @@ export default function Home() {
                     </Reveal>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                         {[
-                            { label:"Projects Completed", value: 100, suffix:"+" },
+                            {
+                                label: "Projects Completed",
+                                value: 100,
+                                suffix: "+",
+                            },
                             {
                                 label: "Years Experience",
                                 value: 15,
@@ -1281,12 +1314,17 @@ export default function Home() {
                         </div>
 
                         {/* Map */}
-                        <Reveal delay={100} className="md:col-span-2">
+                        <Reveal
+                            delay={100}
+                            className="md:col-span-2"
+                            style={{ display: "flex", flexDirection: "column" }}
+                        >
                             <div
                                 id="home-map"
                                 className="rounded-2xl overflow-hidden border border-gray-100"
                                 style={{
-                                    height: 380,
+                                    flex: 1,
+                                    minHeight: 472,
                                     zIndex: 1,
                                     boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
                                 }}
@@ -1336,7 +1374,10 @@ export default function Home() {
                     <div>
                         <p className="text-white font-medium mb-3">Contact</p>
                         <div className="space-y-2 text-sm">
-                            <p>📍 Sungai Buloh, Selangor</p>
+                            <p>
+                                📍 No 39-1, Jalan Bidara 10, Bandar Saujana
+                                Utama, 47000 Sungai Buloh, Selangor
+                            </p>
                             <p>📞 +03-6038 8523</p>
                             <p>✉️ info@jurukurvisi.com</p>
                         </div>

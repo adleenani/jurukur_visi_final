@@ -1,7 +1,7 @@
 // Contact page with consultation booking form and booking status checker.
 
 import PublicLayout from "../Layouts/PublicLayout";
-import { useForm, usePage } from "@inertiajs/react";
+import { useForm, usePage, Link } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
@@ -84,8 +84,8 @@ function Reveal({ children, delay = 0, className = "" }) {
    FIELD WRAPPER
 ───────────────────────────────────────────── */
 function Field({ label, error, hint, children }) {
-    const isRequired = label.includes('*');
-    const cleanLabel = label.replace('*', '').trim();
+    const isRequired = label.includes("*");
+    const cleanLabel = label.replace("*", "").trim();
 
     return (
         <div>
@@ -105,8 +105,16 @@ function Field({ label, error, hint, children }) {
                 )}
             </label>
             {children}
-            {hint && <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 3 }}>{hint}</p>}
-            {error && <p style={{ fontSize: 10, color: "#dc2626", marginTop: 3 }}>{error}</p>}
+            {hint && (
+                <p style={{ fontSize: 10, color: "#9ca3af", marginTop: 3 }}>
+                    {hint}
+                </p>
+            )}
+            {error && (
+                <p style={{ fontSize: 10, color: "#dc2626", marginTop: 3 }}>
+                    {error}
+                </p>
+            )}
         </div>
     );
 }
@@ -170,7 +178,7 @@ export default function Contact() {
 
     const { data, setData, post, processing, reset, errors } = useForm({
         name: "",
-        company_name:      '',
+        company_name: "",
         email: "",
         phone: "",
         service_type: "",
@@ -246,6 +254,11 @@ export default function Contact() {
                 @keyframes glowPulse { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.4)} 50%{box-shadow:0 0 0 8px rgba(74,222,128,0)} }
                 .shimmer-btn { position:relative; overflow:hidden; }
                 .shimmer-btn::after { content:''; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent); animation:shimmer 2.8s infinite; }
+                @media (max-width: 640px) {
+                    .contact-main-grid { grid-template-columns: 1fr !important; }
+                    .form-row-2 { grid-template-columns: 1fr !important; }
+                    .contact-form-pad { padding: 20px !important; }
+                }
             `}</style>
 
             {/* ── HERO STRIP ── */}
@@ -362,12 +375,16 @@ export default function Contact() {
                         }}
                     >
                         {[
-                            { icon: "📍", text: "Sungai Buloh, Selangor" },
+                            {
+                                icon: "📍",
+                                text: "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor",
+                            },
                             { icon: "📞", text: "+03-6038 8523" },
                             { icon: "✉️", text: "info@jurukurvisi.com" },
                             { icon: "🕐", text: "Mon–Fri, 9am–5pm" },
                         ].map(({ icon, text }) => (
                             <div
+                                className="contact-form-pad"
                                 key={text}
                                 style={{
                                     display: "flex",
@@ -393,6 +410,7 @@ export default function Contact() {
             <div style={{ background: "#f8fafb", padding: "40px 24px 60px" }}>
                 <div className="max-w-6xl mx-auto">
                     <div
+                        className="contact-main-grid"
                         style={{
                             display: "grid",
                             gridTemplateColumns: "1fr 300px",
@@ -453,9 +471,13 @@ export default function Contact() {
                                 >
                                     {/* Row 1: Full Name + Company Name */}
                                     <div
+                                        className="form-row-2"
                                         style={{
                                             display: "grid",
-                                            gridTemplateColumns: "1fr 1fr",
+                                            gridTemplateColumns:
+                                                window.innerWidth < 640
+                                                    ? "1fr"
+                                                    : "1fr 1fr",
                                             gap: 16,
                                             marginBottom: 16,
                                         }}
@@ -503,9 +525,13 @@ export default function Contact() {
 
                                     {/* Row 2: Email + Phone */}
                                     <div
+                                        className="form-row-2"
                                         style={{
                                             display: "grid",
-                                            gridTemplateColumns: "1fr 1fr",
+                                            gridTemplateColumns:
+                                                window.innerWidth < 640
+                                                    ? "1fr"
+                                                    : "1fr 1fr",
                                             gap: 16,
                                             marginBottom: 16,
                                         }}
@@ -554,9 +580,13 @@ export default function Contact() {
 
                                     {/* Row 3: Service + Preferred Date */}
                                     <div
+                                        className="form-row-2"
                                         style={{
                                             display: "grid",
-                                            gridTemplateColumns: "1fr 1fr",
+                                            gridTemplateColumns:
+                                                window.innerWidth < 640
+                                                    ? "1fr"
+                                                    : "1fr 1fr",
                                             gap: 16,
                                             marginBottom: 16,
                                         }}
@@ -885,7 +915,7 @@ export default function Contact() {
                                             {
                                                 icon: "📍",
                                                 label: "Address",
-                                                value: "Sungai Buloh, Selangor",
+                                                value: "No 39-1, Jalan Bidara 10, Bandar Saujana Utama, 47000 Sungai Buloh, Selangor",
                                             },
                                             {
                                                 icon: "📞",
@@ -1391,6 +1421,80 @@ export default function Contact() {
                     </div>
                 </div>
             )}
+
+            {/* ── FOOTER ── */}
+            <footer className="bg-gray-900 text-gray-400 py-12 px-6">
+                <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
+                    <div>
+                        <p className="text-white font-bold text-lg mb-2">
+                            JURUKUR VISI
+                        </p>
+                        <p className="text-sm leading-relaxed">
+                            Professional Bumiputera surveying and mapping
+                            consultancy based in Selangor, Malaysia.
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-white font-medium mb-3">
+                            Quick Links
+                        </p>
+                        <div className="space-y-2 text-sm">
+                            {[
+                                ["Home", "/"],
+                                ["About", "/about"],
+                                ["Projects", "/projects"],
+                                ["Contact", "/contact"],
+                                ["Staff Login", "/login"],
+                            ].map(([label, href]) => (
+                                <div key={label}>
+                                    <Link
+                                        href={href}
+                                        className="hover:text-green-400 transition"
+                                    >
+                                        {label}
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-white font-medium mb-3">Contact</p>
+                        <div className="space-y-2 text-sm">
+                            <p>
+                                📍 No 39-1, Jalan Bidara 10, Bandar Saujana
+                                Utama, 47000 Sungai Buloh, Selangor
+                            </p>
+                            <p>📞 +03-6038 8523</p>
+                            <p>✉️ info@jurukurvisi.com</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-white font-medium mb-3">Find Us</p>
+                        <div className="space-y-2 text-sm">
+                            <a
+                                href="https://www.facebook.com/jurukurvisi"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-blue-400 transition"
+                            >
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                </svg>
+                                Jurukur Visi Sdn Bhd
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div className="max-w-6xl mx-auto mt-8 pt-8 border-t border-gray-800 text-center text-xs">
+                    © {new Date().getFullYear()} Jurukur Visi Sdn Bhd. All
+                    rights reserved.
+                </div>
+            </footer>
         </PublicLayout>
     );
 }

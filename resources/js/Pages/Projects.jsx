@@ -2,6 +2,7 @@
 
 import PublicLayout from "../Layouts/PublicLayout";
 import { useState, useEffect, useRef } from "react";
+import { Link } from "@inertiajs/react";
 
 /* ─────────────────────────────────────────────
    SCROLL REVEAL
@@ -134,6 +135,7 @@ function ProjectCard({ project, index }) {
     return (
         <Reveal delay={index * 70}>
             <div
+                className="project-card"
                 style={{
                     background: "#fff",
                     borderRadius: 20,
@@ -158,6 +160,7 @@ function ProjectCard({ project, index }) {
             >
                 {/* LEFT: Image */}
                 <div
+                    className="project-img-box"
                     style={{
                         position: "relative",
                         minHeight: 200,
@@ -374,11 +377,20 @@ export default function Projects({ projects }) {
             <style>{`
                 @keyframes glowPulse { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0)} }
                 @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+                @media (max-width: 640px) {
+                    .project-card { grid-template-columns: 1fr !important; }
+                    .project-img-box { min-height: 160px !important; }
+                    .project-list-pad { padding: 24px 16px !important; }
+                    .hero-strip-pad { padding: 32px 16px 24px !important; }
+                    .filter-tabs { gap: 6px !important; }
+                    .filter-tab-btn { padding: 6px 10px !important; font-size: 11px !important; }
+                }
             `}</style>
 
             <div className="min-h-screen" style={{ background: "#f8fafb" }}>
                 {/* ── HERO STRIP ── */}
                 <div
+                    className="hero-strip-pad"
                     style={{
                         background:
                             "linear-gradient(135deg,#022c22,#064e3b,#065f46)",
@@ -453,6 +465,7 @@ export default function Projects({ projects }) {
 
                         {/* ── DYNAMIC SERVICE FILTER TABS ── */}
                         <div
+                            className="filter-tabs"
                             style={{
                                 display: "flex",
                                 flexWrap: "wrap",
@@ -530,7 +543,7 @@ export default function Projects({ projects }) {
                 </div>
 
                 {/* ── PROJECT LIST ── */}
-                <div className="max-w-6xl mx-auto px-6 py-12">
+                <div className="project-list-pad max-w-6xl mx-auto px-6 py-12">
                     {filtered.length === 0 ? (
                         <div
                             style={{
@@ -581,6 +594,80 @@ export default function Projects({ projects }) {
                     )}
                 </div>
             </div>
+
+            {/* ── FOOTER ── */}
+            <footer className="bg-gray-900 text-gray-400 py-12 px-6">
+                <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
+                    <div>
+                        <p className="text-white font-bold text-lg mb-2">
+                            JURUKUR VISI
+                        </p>
+                        <p className="text-sm leading-relaxed">
+                            Professional Bumiputera surveying and mapping
+                            consultancy based in Selangor, Malaysia.
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-white font-medium mb-3">
+                            Quick Links
+                        </p>
+                        <div className="space-y-2 text-sm">
+                            {[
+                                ["Home", "/"],
+                                ["About", "/about"],
+                                ["Projects", "/projects"],
+                                ["Contact", "/contact"],
+                                ["Staff Login", "/login"],
+                            ].map(([label, href]) => (
+                                <div key={label}>
+                                    <Link
+                                        href={href}
+                                        className="hover:text-green-400 transition"
+                                    >
+                                        {label}
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-white font-medium mb-3">Contact</p>
+                        <div className="space-y-2 text-sm">
+                            <p>
+                                📍 No 39-1, Jalan Bidara 10, Bandar Saujana
+                                Utama, 47000 Sungai Buloh, Selangor
+                            </p>
+                            <p>📞 +03-6038 8523</p>
+                            <p>✉️ info@jurukurvisi.com</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-white font-medium mb-3">Find Us</p>
+                        <div className="space-y-2 text-sm">
+                            <a
+                                href="https://www.facebook.com/jurukurvisi"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-blue-400 transition"
+                            >
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                </svg>
+                                Jurukur Visi Sdn Bhd
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div className="max-w-6xl mx-auto mt-8 pt-8 border-t border-gray-800 text-center text-xs">
+                    © {new Date().getFullYear()} Jurukur Visi Sdn Bhd. All
+                    rights reserved.
+                </div>
+            </footer>
         </PublicLayout>
     );
 }
