@@ -535,6 +535,8 @@ export default function Home() {
             const link = document.createElement("link");
             link.rel = "stylesheet";
             link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+            link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+            link.crossOrigin = "anonymous";
             document.head.appendChild(link);
             const sc = document.createElement("script");
             sc.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";

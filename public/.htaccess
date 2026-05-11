@@ -18,4 +18,9 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # Header
+    Header unset X-Powered-By
+    Header unset Server
+    ServerTokens Prod
 </IfModule>

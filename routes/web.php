@@ -42,16 +42,13 @@ Route::middleware(['role:pic'])->group(function () {
     Route::post('/admin/users/{id}/delete', [UserController::class, 'destroy'])->name('admin.users.delete');
 
     // Project management
-    Route::get('/dashboard', [ProjectController::class, 'dashboard'])->name('dashboard');
     Route::get('/admin/projects', [ProjectController::class, 'index'])->name('admin.projects');
     Route::get('/admin/projects/create', [ProjectController::class, 'create'])->name('admin.projects.create');
     Route::post('/admin/projects', [ProjectController::class, 'store'])->name('admin.projects.store');
     Route::get('/admin/projects/{project_id}/edit', [ProjectController::class, 'edit'])->name('admin.projects.edit');
     Route::post('/admin/projects/{project_id}/update', [ProjectController::class, 'update'])->name('admin.projects.update');
     Route::post('/admin/projects/{project_id}/delete', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
-    Route::put('/admin/projects/{id}', [ProjectController::class, 'update']);
-    Route::delete('/admin/projects/{project_id}', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
-
+    
     // Booking management
     Route::get('/admin/bookings', [BookingController::class, 'index'])->name('admin.bookings');
     Route::get('/admin/bookings/{reference_number}', [BookingController::class, 'show'])->name('admin.bookings.show');
