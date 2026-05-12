@@ -35,10 +35,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
 
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
-    })
-
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

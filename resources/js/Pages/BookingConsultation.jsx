@@ -3,7 +3,6 @@
 import PublicLayout from "../Layouts/PublicLayout";
 import { useForm, usePage, Link } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 
 /* ─────────────────────────────────────────────
    DATA
