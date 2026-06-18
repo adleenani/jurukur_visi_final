@@ -48,7 +48,7 @@ class UserController extends Controller
     }
 
     // Show create user form.
-    public function create()
+    public function create() 
     {
         return Inertia::render('Admin/Users/Create');
     }

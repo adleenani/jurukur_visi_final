@@ -154,9 +154,16 @@ class ProjectController extends Controller
     // Delete project.
     public function destroy($project_id)
     {
+        abort_unless(
+            hash_equals(
+                session()->token(),
+                request()->header('X-XSRF-TOKEN') ??
+                request()->input('_token') ?? ''
+            ),
+            419
+        );
         $project = Project::where('project_id', $project_id)->firstOrFail();
         $project->delete();
-
         return redirect()->route('admin.projects')
             ->with('success', 'Project deleted successfully!');
     }
